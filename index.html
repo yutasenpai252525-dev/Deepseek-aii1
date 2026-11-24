@@ -1,0 +1,3942 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>AI TUNNELING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=M+PLUS+Rounded+1c:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;font-family:var(--theme-font-body, 'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif);max-width:100%}
+html,body{overflow-x:hidden;width:100%;margin:0;-webkit-tap-highlight-color:transparent;scroll-behavior:auto}
+body{
+  color:#F8FAFC;
+  min-height:100vh;
+  background:#03060E;
+  --acc:#22C55E;
+  --acc2:#06B6D4;
+  --acc3:#F59E0B;
+  --hud-bg:radial-gradient(circle at 90% 8%, color-mix(in srgb, var(--acc) 18%, transparent), transparent 52%), radial-gradient(circle at 10% 92%, color-mix(in srgb, var(--acc2) 15%, transparent), transparent 55%), linear-gradient(160deg, rgba(10,19,38,0.94), rgba(4,9,20,0.98));
+  --hud-border:rgba(34,197,94,0.55);
+  --theme-font-body:'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif;
+  --theme-font-display:'Chakra Petch', 'M PLUS Rounded 1c', sans-serif;
+  --theme-font-mono:'Share Tech Mono', ui-monospace, monospace;
+}
+
+#bgLayer{position:fixed;inset:0;z-index:-4;background:#03060E center center / cover no-repeat;pointer-events:none}
+#bgOverlay{position:fixed;inset:0;z-index:-3;background:radial-gradient(circle at 50% 18%, rgba(6,182,212,0.08), rgba(3,6,14,0.55) 75%);pointer-events:none}
+
+#hudGrid{
+  position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--acc) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--acc2) 9%, transparent) 1px, transparent 1px);
+  background-size:32px 32px;
+}
+#hudScanline{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,0.014) 0px, rgba(255,255,255,0.014) 1px, transparent 1px, transparent 3px);
+}
+
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.petal{position:absolute;top:-28px;animation:fallAutumn linear infinite;opacity:.92}
+@keyframes fallAutumn{
+  0%{transform:translate3d(0,-28px,0) rotate(0deg) scale(.9);opacity:0}
+  12%{opacity:.95}
+  35%{transform:translate3d(-26px,35vh,0) rotate(110deg) scale(1)}
+  70%{transform:translate3d(34px,72vh,0) rotate(245deg) scale(.95)}
+  100%{transform:translate3d(-18px,112vh,0) rotate(380deg) scale(.85);opacity:0}
+}
+
+.wrap{width:100%;max-width:540px;margin:0 auto;padding:12px;padding-bottom:112px;overflow:visible;position:relative;z-index:1}
+
+.hud-frame{
+  background:var(--hud-bg);
+  border:1px solid color-mix(in srgb, var(--acc) 55%, rgba(255,255,255,0.14));
+  border-radius:16px;
+  clip-path:polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.45);
+  position:relative;
+}
+.hud-frame::before{
+  content:"";position:absolute;top:0;left:16px;right:0;height:1px;
+  background:linear-gradient(90deg, var(--acc), var(--acc2), transparent);
+  pointer-events:none;
+}
+.hud-accent-line{
+  height:2px;
+  width:100%;
+  background:linear-gradient(90deg,transparent,var(--acc),var(--acc2),var(--acc3),transparent);
+  margin:9px 0;
+  opacity:.85;
+}
+
+.top{
+  padding:15px 16px;
+  overflow:visible;
+  clip-path:none !important;
+  border-radius:16px;
+}
+.top::before{left:14px;right:14px}
+
+.search-box-frame{
+  padding:12px;
+  overflow:visible;
+  clip-path:none !important;
+  border-radius:16px;
+}
+.search-box-frame::before{left:14px;right:14px}
+
+.welcome-wrap{overflow:hidden;white-space:nowrap;height:28px;position:relative;padding-left:2px;padding-right:46px}
+.welcome-text{position:absolute;left:0;top:0;white-space:nowrap;font-size:16.5px;font-weight:950;letter-spacing:.5px;animation:jalanKiri 11s linear infinite,warnaAnime 3.2s linear infinite}
+@keyframes jalanKiri{0%{transform:translate3d(100%,0,0)}100%{transform:translate3d(-100%,0,0)}}
+@keyframes warnaAnime{0%{color:#4ADE80}33%{color:#38BDF8}66%{color:#FBBF24}100%{color:#4ADE80}}
+
+#topMenuBtn{
+  position:absolute;right:12px;top:12px;width:38px;height:38px;
+  border-radius:10px;border:1.5px solid var(--acc);
+  background:linear-gradient(145deg, rgba(15,23,42,0.9), rgba(6,12,24,0.96));
+  color:var(--acc);
+  font-size:19px;font-weight:900;cursor:pointer;line-height:1;z-index:120;touch-action:manipulation;
+}
+#topMenuBtn:active{transform:scale3d(.94,.94,1)}
+
+#topMenu{
+  position:fixed;right:12px;top:62px;z-index:25000;
+  background:linear-gradient(165deg, rgba(8,15,30,0.98), rgba(4,8,18,0.99));
+  border:1.5px solid var(--acc);border-radius:14px;
+  box-shadow:0 12px 28px rgba(0,0,0,0.7);
+  padding:10px;padding-bottom:22px;width:255px;display:none;
+  max-height:76vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  touch-action:pan-y;overscroll-behavior:contain;
+}
+#topMenu::-webkit-scrollbar{width:5px}
+#topMenu::-webkit-scrollbar-thumb{background:var(--acc);border-radius:99px}
+#topMenu button{
+  width:100%;background:rgba(15,23,42,0.84);
+  border:1px solid rgba(56,189,248,0.24);color:#F8FAFC;
+  padding:9px 11px;border-radius:9px;font-weight:800;font-size:11.5px;
+  text-align:left;cursor:pointer;margin-bottom:6px;display:block;
+  touch-action:manipulation;
+}
+#topMenu button:last-child{margin-bottom:0}
+#topMenu button.active-theme{
+  border-color:var(--acc);
+  background:linear-gradient(90deg, color-mix(in srgb, var(--acc) 26%, transparent), rgba(15,23,42,0.9));
+  box-shadow:inset 3px 0 0 var(--acc);
+}
+#topMenu .label{
+  font-size:10px;color:var(--acc2);padding:8px 3px 5px;
+  font-weight:900;letter-spacing:1px;
+}
+#themeSearchInput{
+  padding:8px 10px;font-size:11.5px;margin-bottom:7px;border-radius:8px;
+}
+
+.clock{
+  background:linear-gradient(90deg, rgba(4,10,22,0.78), rgba(10,20,38,0.65));
+  border:1px solid rgba(56,189,248,0.25);
+  border-left:3.5px solid var(--acc2);
+  border-radius:10px;padding:10px 13px;margin-top:6px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.clock b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:21px;white-space:nowrap;letter-spacing:1.2px}
+#jamText,#hariText,#tglText,#thnText{animation:warnaAnime 3.2s linear infinite}
+#thnText{background:rgba(6,182,212,0.14)!important;border:1px solid rgba(56,189,248,0.4)}
+.clock span{font-size:11px;color:#E2E8F0;font-weight:700}
+
+#quoteBox{
+  margin-top:9px;background:rgba(4,10,22,0.72);
+  border:1px solid rgba(34,197,94,0.28);border-radius:9px;
+  padding:8px 11px;font-size:11.5px;line-height:1.45;text-align:center;
+}
+#quoteText{animation:warnaAnime 3.2s linear infinite;font-weight:800;display:inline-block;transition:opacity .22s}
+#quoteText.fade{opacity:0}
+
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}
+.menu button{
+  border:1px solid rgba(56,189,248,0.26);
+  padding:10px 6px;border-radius:10px;
+  font-weight:900;font-size:11px;cursor:pointer;
+  background:linear-gradient(160deg, rgba(12,21,38,0.88), rgba(6,12,24,0.95));
+  color:#E2E8F0;
+  text-transform:uppercase;letter-spacing:.4px;
+  touch-action:manipulation;
+}
+.menu button.active{
+  background:linear-gradient(135deg, color-mix(in srgb, var(--acc) 36%, #091326), color-mix(in srgb, var(--acc2) 34%, #091326));
+  color:#fff;border-color:var(--acc);
+}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
+.stat{
+  background:linear-gradient(170deg, rgba(10,19,36,0.88), rgba(5,10,22,0.95));
+  border:1px solid rgba(56,189,248,0.24);
+  border-top:2.5px solid var(--acc);
+  padding:10px 6px;border-radius:11px;text-align:center;
+}
+.stat b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:19px;display:block;color:var(--acc)}
+.stat span{font-size:9.5px;color:#CBD5E1;font-weight:900;letter-spacing:.8px}
+
+.card2{background:transparent;border:0;padding:0;margin-top:12px;overflow:visible}
+.anime-panel{padding:15px;margin-bottom:11px;overflow:visible}
+
+input,select,textarea{
+  width:100%;background:rgba(4,9,20,0.82);
+  border:1px solid rgba(56,189,248,0.34);
+  color:#F8FAFC;padding:11px 12px;border-radius:10px;margin-bottom:9px;
+  outline:none;font-size:13.5px;position:relative;z-index:2;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--acc);
+}
+input::placeholder,textarea::placeholder{color:rgba(148,163,184,0.85)}
+textarea{resize:vertical}
+
+.btn{
+  border:0;padding:11px 10px;border-radius:10px;
+  font-weight:900;cursor:pointer;font-size:11.5px;min-width:0;
+  text-transform:uppercase;letter-spacing:.6px;
+  touch-action:manipulation;
+}
+.btn:active{opacity:.86;transform:scale3d(.98,.98,1)}
+.btn-primary{
+  width:100%;
+  background:linear-gradient(135deg, rgba(14,165,233,0.38), rgba(34,197,94,0.38));
+  border:1.5px solid var(--acc2);
+  color:#F0F9FF;
+}
+.btn-yellow{width:100%;background:linear-gradient(135deg, rgba(245,158,11,0.34), rgba(217,119,6,0.28));border:1px solid #FBBF24;color:#FEF3C7;margin-bottom:10px}
+.btn-green{flex:1;background:linear-gradient(135deg, rgba(34,197,94,0.34), rgba(16,185,129,0.28));border:1px solid #22C55E;color:#DCFCE7}
+.btn-purple{flex:1;background:linear-gradient(135deg, rgba(99,102,241,0.34), rgba(79,70,229,0.28));border:1px solid #818CF8;color:#E0E7FF}
+.btn-white{flex:1;background:rgba(30,41,59,0.74);border:1px solid rgba(148,163,184,0.45);color:#F8FAFC}
+.btn-red{background:linear-gradient(135deg, rgba(239,68,68,0.34), rgba(185,28,28,0.28));border:1px solid rgba(248,113,113,.65);color:#FECACA;flex:0 0 72px}
+.btn-cyan{flex:1;background:linear-gradient(135deg, rgba(6,182,212,0.36), rgba(2,132,199,0.28));border:1px solid #38BDF8;color:#E0F2FE}
+.btn-orange{flex:1;background:linear-gradient(135deg, rgba(249,115,22,0.34), rgba(234,88,12,0.28));border:1px solid #FB923C;color:#FFEDD5}
+.btn-ghost{width:100%;background:rgba(15,23,42,0.68);color:#E2E8F0;border:1px solid rgba(56,189,248,0.26);margin-bottom:8px}
+.row{display:flex;gap:7px;flex-wrap:wrap}
+
+.code{
+  background:rgba(3,7,16,0.78);
+  border:1px solid rgba(56,189,248,0.22);
+  border-left:3.5px solid var(--acc2);
+  border-radius:10px;padding:11px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;line-height:1.65;word-break:break-all;margin:9px 0;white-space:pre-wrap;
+}
+.preview{
+  background:rgba(4,20,16,0.74);
+  border:1px solid rgba(34,197,94,.7);
+  border-radius:10px;padding:11px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-all;margin-top:10px;
+}
+
+.badge{font-size:10px;font-weight:900;padding:4px 9px;border-radius:5px;white-space:nowrap;flex-shrink:0;letter-spacing:.6px}
+.badge.ID{background:rgba(220,38,38,0.28);color:#FCA5A5;border:1px solid #EF4444}
+.badge.SG{background:rgba(2,132,199,0.28);color:#BAE6FD;border:1px solid #38BDF8}
+.badge.VIP{background:rgba(217,119,6,0.30);color:#FDE68A;border:1px solid #FBBF24}
+.badge.XL{background:rgba(37,99,235,0.28);color:#BFDBFE;border:1px solid #60A5FA}
+.badge.TELKOMSEL{background:rgba(220,38,38,0.28);color:#FECACA;border:1px solid #F87171}
+.badge.AXIS{background:rgba(99,102,241,0.28);color:#C7D2FE;border:1px solid #818CF8}
+.badge.INDOSAT{background:rgba(217,119,6,0.28);color:#FDE68A;border:1px solid #FBBF24}
+.badge.UMUM{background:rgba(22,163,74,0.28);color:#BBF7D0;border:1px solid #4ADE80}
+.badge.TRI{background:rgba(234,88,12,0.28);color:#FED7AA;border:1px solid #FB923C}
+.badge.APP{background:rgba(16,185,129,0.28);color:#A7F3D0;border:1px solid #34D399}
+.exp{font-size:11px;color:#CBD5E1;margin-top:4px;word-break:break-word}
+.hidden{display:none}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translate3d(-50%,0,0);background:rgba(6,12,24,0.97);border:1.5px solid var(--acc);box-shadow:0 8px 20px rgba(0,0,0,0.65);color:#fff;font-weight:900;padding:11px 17px;border-radius:9px;z-index:99999;display:none;max-width:92%;text-align:center;font-size:12.5px;pointer-events:none}
+#modalCopy{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;display:none;align-items:center;justify-content:center;padding:16px}
+#modalCopy .box{background:rgba(8,15,30,0.98);border:1.5px solid var(--acc);border-radius:14px;padding:16px;width:100%;max-width:520px}
+.status{padding:11px;border-radius:9px;text-align:center;font-weight:800;font-size:12.5px;margin-bottom:10px;border:1px solid var(--acc2);background:rgba(6,12,24,0.75)}
+.status.ok{border-color:#22C55E;color:#BBF7D0}
+.status.err{border-color:#EF4444;color:#FECACA}
+.status.work{border-color:#F59E0B;color:#FDE68A}
+.acct{word-break:break-word}
+.acct b{word-break:break-all}
+
+#lock{
+  position:fixed;inset:0;
+  background:radial-gradient(circle at 50% 28%, rgba(6,182,212,0.16), rgba(3,6,14,0.96) 70%);
+  z-index:20000;display:flex;align-items:center;justify-content:center;padding:20px
+}
+#lock .box{
+  background:linear-gradient(165deg, rgba(10,19,36,0.96), rgba(4,9,20,0.99));
+  border:1.5px solid var(--acc);
+  box-shadow:0 16px 36px rgba(0,0,0,0.75);
+  clip-path:polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+  border-radius:16px;padding:24px 20px;width:100%;max-width:370px;text-align:center
+}
+.lock-emblem{
+  width:62px;height:62px;margin:0 auto 10px;border-radius:16px;
+  background:linear-gradient(135deg, rgba(6,182,212,0.22), rgba(34,197,94,0.22));
+  border:1.5px solid var(--acc2);
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+}
+.filebox{background:rgba(4,9,20,0.68);border:1.5px dashed rgba(56,189,248,0.45);border-radius:10px;padding:12px;margin-bottom:9px;text-align:center;font-size:13px}
+.filebox input{margin:0}
+label{font-size:11px;color:var(--acc2);display:block;margin:3px 0 5px;font-weight:900;letter-spacing:.6px;text-transform:uppercase}
+
+#musicPanel,#bgPanel,#senkuPanel{
+  position:fixed;right:12px;top:66px;z-index:25000;
+  background:linear-gradient(165deg, rgba(8,15,30,0.98), rgba(4,8,18,0.99));
+  border:1.5px solid var(--acc);border-radius:14px;
+  box-shadow:0 12px 28px rgba(0,0,0,0.7);
+  padding:13px;width:calc(100% - 24px);max-width:355px;display:none;
+  max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain
+}
+
+.preset-list{
+  max-height:175px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:rgba(4,9,20,0.78);border:1px solid rgba(56,189,248,0.22);
+  border-radius:9px;padding:6px;margin-bottom:9px;
+}
+.preset-item{
+  padding:8px 9px;border-radius:7px;font-size:11.5px;font-weight:700;
+  cursor:pointer;margin-bottom:4px;background:rgba(15,23,42,0.78);
+  border:1px solid rgba(255,255,255,.12);color:#F1F5F9;
+}
+.preset-item:last-child{margin-bottom:0}
+.preset-item.active{
+  border-color:var(--acc);background:rgba(34,197,94,0.24);color:#fff;
+}
+
+.hud-item-card{
+  background:linear-gradient(165deg, rgba(10,19,36,0.92), rgba(5,10,22,0.97));
+  border:1px solid rgba(56,189,248,0.24);
+  border-left:3.5px solid var(--acc);
+  border-radius:12px;padding:13px;margin-bottom:10px;overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,0.32);
+  contain:layout style;
+}
+
+#senkuAiBackdrop{
+  position:fixed;inset:0;z-index:26000;
+  background:rgba(2,5,13,0.88);
+  display:none;align-items:flex-end;justify-content:center;
+  padding:10px;padding-bottom:94px;
+}
+#senkuAiBackdrop.open{display:flex}
+@keyframes dotBounce{0%,80%,100%{transform:translateY(0);opacity:.45}40%{transform:translateY(-4px);opacity:1}}
+
+#senkuAiBox{
+  width:100%;max-width:520px;
+  margin:0;padding:15px;
+  background:linear-gradient(165deg, rgba(10,19,38,0.99), rgba(4,8,18,0.995));
+  border:1.5px solid var(--acc);
+  border-radius:18px;
+  clip-path:none;
+  box-shadow:0 16px 36px rgba(0,0,0,0.8);
+  max-height:78vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+}
+#senkuAiBox::before{display:none}
+.senku-hdr{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding-bottom:10px;
+  border-bottom:1px solid color-mix(in srgb, var(--acc2) 32%, transparent);
+  position:relative;
+}
+.senku-hdr::after{
+  content:"";position:absolute;left:0;bottom:-1px;width:96px;height:2px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2),transparent);
+}
+.senku-hdr-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.senku-avatar-sm{
+  width:46px;height:46px;border-radius:13px;
+  border:1.5px solid var(--acc);
+  background:linear-gradient(145deg, color-mix(in srgb, var(--acc) 22%, rgba(10,18,34,0.96)), color-mix(in srgb, var(--acc2) 16%, rgba(6,10,22,0.98)));
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;overflow:hidden;flex-shrink:0;
+}
+.senku-avatar-sm img{width:100%;height:100%;object-fit:cover}
+.senku-title{
+  font-family:'Chakra Petch', 'M PLUS Rounded 1c', sans-serif !important;
+  font-size:13px;font-weight:700;letter-spacing:0.03em;
+  color:#FFFFFF !important;
+  background:none !important;
+  -webkit-background-clip:border-box !important;
+  -webkit-text-fill-color:#FFFFFF !important;
+  filter:none !important;
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  line-height:1.25;
+}
+.senku-sub{
+  font-size:10.5px;
+  color:color-mix(in srgb, var(--acc2) 85%, #FFFFFF);
+  font-weight:700;
+  font-family:'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing:0.01em;
+  opacity:.95;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;
+}
+.senku-badge-tag{
+  display:inline-block;
+  font-family:'Chakra Petch', 'M PLUS Rounded 1c', sans-serif !important;
+  font-size:9px;font-weight:700;letter-spacing:0.05em;
+  padding:2.5px 8px;border-radius:99px;flex-shrink:0;
+  background:linear-gradient(135deg, color-mix(in srgb, var(--acc) 28%, rgba(8,15,30,0.92)), color-mix(in srgb, var(--acc2) 28%, rgba(8,15,30,0.92)));
+  border:1px solid var(--acc);
+  color:#FFFFFF;
+  -webkit-text-fill-color:#FFFFFF;
+}
+.senku-action-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+
+.senku-chip-row{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}
+.senku-chip{
+  background:linear-gradient(135deg, color-mix(in srgb, var(--acc2) 18%, rgba(10,19,36,0.9)), rgba(7,14,28,0.92));
+  border:1px solid color-mix(in srgb, var(--acc2) 55%, transparent);
+  color:#E0F2FE;font-size:11px;font-weight:700;
+  padding:6px 11px;border-radius:99px;cursor:pointer;
+  letter-spacing:0.01em;touch-action:manipulation;
+}
+.senku-chip:hover{border-color:var(--acc);color:#fff}
+.senku-chip:active{transform:scale(.96);background:color-mix(in srgb, var(--acc) 28%, transparent)}
+
+#senkuChatLog{
+  max-height:275px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  display:flex;flex-direction:column;gap:10px;
+  padding:11px 8px;margin-bottom:6px;
+  background:rgba(4,9,20,0.96);
+  border:1px solid color-mix(in srgb, var(--acc2) 30%, transparent);
+  border-radius:14px;
+  contain:content;
+}
+#senkuChatLog::-webkit-scrollbar{width:4px}
+#senkuChatLog::-webkit-scrollbar-thumb{background:var(--acc2);border-radius:99px}
+
+#aiTypingBar{
+  display:none;
+  align-items:center;
+  gap:8px;
+  font-size:11.5px;
+  font-style:normal;
+  font-weight:700;
+  letter-spacing:0.01em;
+  color:var(--acc2);
+  padding:5px 10px 8px;
+}
+#aiTypingBar.show{display:flex}
+.ai-dots{display:inline-flex;gap:3px;align-items:center}
+.ai-dots i{
+  display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--acc);animation:dotBounce 1.1s infinite ease-in-out;
+}
+.ai-dots i:nth-child(2){animation-delay:.18s;background:var(--acc2)}
+.ai-dots i:nth-child(3){animation-delay:.36s;background:var(--acc3)}
+
+.chat-msg{
+  max-width:92%;
+  padding:11px 14px;
+  border-radius:14px;
+  font-family:'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif;
+  font-size:13.5px;
+  font-weight:500;
+  line-height:1.62;
+  letter-spacing:0.01em;
+  word-break:break-word;
+  white-space:pre-wrap;
+  position:relative;
+}
+.chat-ai{
+  align-self:flex-start;
+  border-bottom-left-radius:4px;
+  background:linear-gradient(155deg, rgba(10,20,42,0.98), rgba(4,9,22,0.995));
+  border:1px solid color-mix(in srgb, var(--acc) 55%, rgba(255,255,255,0.12));
+  border-left:3.5px solid var(--acc);
+  border-right:1.5px solid color-mix(in srgb, var(--acc2) 55%, transparent);
+  color:#F8FAFC;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
+}
+.chat-ai-body{
+  display:block;
+  font-family:'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif !important;
+  font-style:normal;
+  font-weight:500;
+  font-size:13.5px;
+  line-height:1.62;
+  letter-spacing:0.01em;
+  color:#F8FAFC !important;
+  background:none !important;
+  -webkit-background-clip:border-box !important;
+  -webkit-text-fill-color:#F8FAFC !important;
+  filter:none !important;
+}
+.chat-ai-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  font-family:'Chakra Petch', 'M PLUS Rounded 1c', sans-serif !important;
+  font-style:normal;
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--acc) !important;
+  background:none !important;
+  -webkit-background-clip:border-box !important;
+  -webkit-text-fill-color:var(--acc) !important;
+  filter:none !important;
+  padding-bottom:5px;
+  margin-bottom:6px;
+  border-bottom:1px solid color-mix(in srgb, var(--acc) 32%, transparent);
+}
+.chat-user{
+  align-self:flex-end;
+  border-bottom-right-radius:4px;
+  font-style:normal;
+  background:linear-gradient(135deg, color-mix(in srgb, var(--acc2) 45%, #0B2545), color-mix(in srgb, var(--acc) 32%, #1E3A8A));
+  border:1px solid color-mix(in srgb, var(--acc2) 70%, transparent);
+  color:#FFFFFF;
+  font-weight:500;
+  box-shadow:0 4px 10px rgba(2,132,199,0.2);
+}
+.chat-user-head{
+  display:block;
+  font-family:'Chakra Petch', 'M PLUS Rounded 1c', sans-serif;
+  font-style:normal;
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:#BAE6FD;
+  margin-bottom:3px;
+  text-align:right;
+  opacity:.9;
+}
+.chat-cfg-card{
+  margin-top:8px;
+  background:linear-gradient(160deg, rgba(3,9,20,0.96), rgba(7,18,34,0.96));
+  border:1px solid color-mix(in srgb, var(--acc) 65%, transparent);
+  border-left:3px solid var(--acc2);
+  border-radius:10px;
+  padding:10px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-style:normal;
+  font-size:11px;line-height:1.6;color:#A7F3D0;
+}
+.senku-input-row{display:flex;gap:7px;align-items:center;margin-top:4px}
+.senku-input-row input{
+  margin-bottom:0;flex:1;padding:10px 13px;
+  font-family:'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif;
+  font-size:13px;letter-spacing:0.01em;
+  border-radius:12px;
+  background:rgba(4,9,20,0.9);
+  border:1px solid color-mix(in srgb, var(--acc2) 45%, transparent);
+}
+.senku-send-btn{
+  background:linear-gradient(135deg, color-mix(in srgb, var(--acc) 55%, #064E3B), color-mix(in srgb, var(--acc2) 55%, #0C4A6E));
+  border:1.5px solid var(--acc);
+  color:#fff;border-radius:12px;
+  padding:10px 15px;font-weight:950;font-size:11.5px;letter-spacing:.6px;
+  cursor:pointer;white-space:nowrap;touch-action:manipulation;
+}
+
+#mascot{display:none;position:fixed;left:10px;bottom:10px;z-index:27000;cursor:pointer;text-align:center;animation:bob 2.6s ease-in-out infinite;touch-action:manipulation}
+@keyframes bob{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-7px,0)}}
+#mascot img{width:74px;height:74px;object-fit:cover;border-radius:16px;border:2px solid var(--acc);box-shadow:0 0 14px rgba(34,197,94,0.35);background:rgba(10,17,34,0.85)}
+#mascotFallback{width:74px;height:74px;border-radius:16px;background:rgba(10,17,34,0.85);border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto}
+#mascot .bubble{position:absolute;left:0;bottom:92px;background:rgba(8,15,30,0.98);color:#F8FAFC;border:1.5px solid var(--acc);border-left:3.5px solid var(--acc2);box-shadow:0 8px 20px rgba(0,0,0,0.65);font-size:11.5px;font-weight:700;line-height:1.4;padding:9px 11px;border-radius:9px;width:225px;white-space:normal;word-break:break-word;text-align:left;display:none}
+#mascot .bubble.show{display:block}
+#mascot .name{font-size:9.5px;font-weight:950;background:rgba(3,8,18,0.96);border:1px solid var(--acc);color:var(--acc);padding:2px 9px;border-radius:5px;margin-top:3px;display:inline-block;letter-spacing:.7px}
+
+.hud-frame, .top, .search-box-frame, .hud-item-card, .stat, .clock, #quoteBox, #topMenu, #musicPanel, #bgPanel, #senkuPanel, #modalCopy .box, #lock .box {
+  background:
+    radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--acc) 20%, transparent), transparent 55%),
+    radial-gradient(circle at 8% 90%, color-mix(in srgb, var(--acc2) 16%, transparent), transparent 55%),
+    linear-gradient(155deg, rgba(10,20,42,0.94), rgba(4,9,22,0.98)) !important;
+  border-color: color-mix(in srgb, var(--acc) 58%, rgba(255,255,255,0.14)) !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.45) !important;
+  font-family: var(--theme-font-body) !important;
+}
+.hud-item-card {
+  border-left: 3.5px solid var(--acc) !important;
+  border-right: 1.5px solid color-mix(in srgb, var(--acc2) 50%, transparent) !important;
+}
+.clock {
+  border-left: 3.5px solid var(--acc2) !important;
+}
+.stat {
+  border-top: 2.5px solid var(--acc) !important;
+}
+.stat b, .clock b, .welcome-text, h1, h2, h3 {
+  font-family: var(--theme-font-display) !important;
+  letter-spacing: .5px;
+}
+.stat b, h2, h3 {
+  background: linear-gradient(95deg, #FFFFFF 0%, color-mix(in srgb, var(--acc) 75%, #FFFFFF) 50%, color-mix(in srgb, var(--acc2) 80%, #FFFFFF) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat span, label, #topMenu .label {
+  font-family: var(--theme-font-display) !important;
+  color: color-mix(in srgb, var(--acc2) 82%, #FFFFFF) !important;
+}
+.menu button {
+  background:
+    radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--acc) 16%, transparent), transparent 60%),
+    linear-gradient(160deg, rgba(12,22,42,0.92), rgba(6,12,24,0.97)) !important;
+  border: 1px solid color-mix(in srgb, var(--acc2) 42%, transparent) !important;
+  font-family: var(--theme-font-display) !important;
+  font-size: 10px !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35) !important;
+}
+.menu button.active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--acc) 42%, #091326), color-mix(in srgb, var(--acc2) 38%, #091326)) !important;
+  border: 1.5px solid var(--acc) !important;
+  color: #FFFFFF !important;
+}
+.acct b, .hud-item-card > div:first-child b, #quoteText, .exp {
+  font-family: var(--theme-font-body) !important;
+}
+.acct b, .hud-item-card > div:first-child b {
+  background: linear-gradient(95deg, #FFFFFF 0%, color-mix(in srgb, var(--acc) 65%, #FFFFFF) 55%, color-mix(in srgb, var(--acc2) 70%, #FFFFFF) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.code, .preview, .chat-cfg-card {
+  font-family: var(--theme-font-mono) !important;
+  background: linear-gradient(160deg, rgba(3,8,18,0.92), rgba(7,16,32,0.95)) !important;
+  border-color: color-mix(in srgb, var(--acc2) 38%, transparent) !important;
+  border-left: 3.5px solid var(--acc) !important;
+  color: color-mix(in srgb, var(--acc) 45%, #E2E8F0) !important;
+}
+input, select, textarea, .filebox {
+  font-family: var(--theme-font-body) !important;
+  background: rgba(4,9,20,0.88) !important;
+  border-color: color-mix(in srgb, var(--acc2) 45%, transparent) !important;
+  color: #F8FAFC !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--acc) !important;
+}
+.btn {
+  font-family: var(--theme-font-display) !important;
+  letter-spacing: .5px;
+}
+.chat-msg, .chat-ai-body, .senku-input-row input, #senkuAiBox, #senkuAiBox button {
+  font-family: 'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif !important;
+}
+.senku-title, .chat-ai-head, .senku-badge-tag {
+  font-family: 'Chakra Petch', 'M PLUS Rounded 1c', sans-serif !important;
+}
+</style>
+</head>
+<body data-theme="anime_1">
+<div id="bgLayer"></div><div id="bgOverlay"></div><div id="hudGrid"></div><div id="hudScanline"></div><div id="particles"></div>
+
+<div id="topMenu" onclick="event.stopPropagation()">
+  <button type="button" onclick="openMusicFromMenu()">🎵 Musik (100 Anime + Audio)</button>
+  <button type="button" onclick="openBgFromMenu()">🖼️ Background (100 Anime Cool)</button>
+  <button type="button" onclick="openSenkuFromMenu()">🧑‍🔬 Upload Maskot</button>
+  <div class="label">🎨 100 TEMA ANIME</div>
+  <input id="themeSearchInput" type="text" placeholder="Cari 100 tema anime..." oninput="filterThemeList(this.value)">
+  <div id="animeThemeList"></div>
+  <button type="button" onclick="toggleTopMenu(event)" style="margin-top:8px">✖️ Tutup Menu</button>
+</div>
+
+<div id="lock">
+  <div class="box">
+    <div class="lock-emblem">🛡️</div>
+    <div style="font-size:11px;font-family:monospace;letter-spacing:1px;color:var(--acc2);font-weight:900;margin-bottom:2px">🔒 Encrypted</div>
+    <h2 style="margin:2px 0 12px;font-size:19px;letter-spacing:.5px">Tunneling Project Moza</h2>
+    <input id="lockPass" type="password" placeholder="Password..." style="text-align:center">
+    <button type="button" class="btn btn-ghost" id="btnShowPass" onclick="toggleLockPass()">👁️ Tampilkan Password</button>
+    <button type="button" class="btn btn-primary" onclick="unlock()">🔓 BUKA</button>
+    <p id="lockErr" style="color:#FCA5A5;font-size:12px;display:none;margin-top:8px">❌ Password salah!</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="modalCopy">
+  <div class="box">
+    <h3 style="margin:0 0 8px">📋 Salin Manual</h3>
+    <textarea id="modalText" readonly style="height:105px"></textarea>
+    <button type="button" onclick="selectAllModal()" style="width:100%;background:#F59E0B;color:#000;border:0;padding:12px;border-radius:8px;font-weight:900">👆 PILIH SEMUA</button>
+    <button type="button" onclick="closeModal()" style="width:100%;background:#fff;color:#000;border:0;padding:11px;border-radius:8px;font-weight:900;margin-top:8px">TUTUP</button>
+  </div>
+</div>
+
+<audio id="mp3Music" loop preload="auto"></audio>
+<audio id="animeVoiceAudio" preload="auto"></audio>
+
+<div id="musicPanel" onclick="event.stopPropagation()">
+  <b style="font-size:13px">🎵 100 Musik Anime & Audio</b>
+  <div id="musicCurrentInfo" style="font-size:11px;color:#A7F3D0;margin:6px 0;word-break:break-all">Memuat lagu anime...</div>
+  <button type="button" class="btn btn-primary" id="btnPlayMusic" onclick="togglePlayMusic()" style="padding:10px 8px">▶️ PLAY MUSIK</button>
+  <button type="button" class="btn btn-cyan" onclick="randomAnimeMusic()" style="width:100%;padding:9px 8px;margin-bottom:8px">🎲 ACAK 100 MUSIK ANIME</button>
+  <input type="text" id="musicSearchInput" placeholder="Cari 100 judul / anime..." oninput="renderAnimeMusicList(this.value)" style="padding:7px 9px;font-size:11.5px;margin-bottom:6px">
+  <div id="animeMusicList" class="preset-list"></div>
+  <button type="button" class="btn btn-ghost" onclick="document.getElementById('mp3File').click()" style="padding:9px 8px">📁 UPLOAD FILE AUDIO SENDIRI</button>
+  <input type="file" id="mp3File" accept="audio/*,.mp3,.m4a,.aac,.ogg,.opus,.wav,.flac,.webm,.3gp,.wma,.amr" class="hidden" onchange="onPickMp3(event)">
+  <label>🔊 Volume</label>
+  <input type="range" id="musicVolRange" min="0" max="100" value="80" oninput="setMusicVolume(this.value)" style="padding:0">
+  <button type="button" class="btn btn-ghost" onclick="hapusMp3()" style="padding:9px 8px">🔄 KEMBALI KE MUSIK ANIME</button>
+  <button type="button" class="btn btn-ghost" onclick="toggleMusicPanel()" style="padding:9px 8px">TUTUP</button>
+</div>
+
+<div id="bgPanel" onclick="event.stopPropagation()">
+  <b style="font-size:13px">🖼️ 100 Background Anime Cool</b>
+  <div id="bgCurrentInfo" style="font-size:11px;color:#A7F3D0;margin:6px 0">BG #1: Science Katana</div>
+  <button type="button" class="btn btn-cyan" onclick="randomAnimeBg()" style="width:100%;padding:9px 8px;margin-bottom:8px">🎲 ACAK 100 BACKGROUND COOL</button>
+  <input type="text" id="bgSearchInput" placeholder="Cari 100 background anime cool..." oninput="renderAnimeBgList(this.value)" style="padding:7px 9px;font-size:11.5px;margin-bottom:6px">
+  <div id="animeBgList" class="preset-list"></div>
+  <button type="button" class="btn btn-primary" onclick="document.getElementById('bgFile').click()" style="padding:9px 8px">📁 UPLOAD BACKGROUND SENDIRI</button>
+  <input type="file" id="bgFile" accept="image/*" class="hidden" onchange="onPickBg(event)">
+  <label>🌑 Gelapin Background</label>
+  <input type="range" id="bgDarkRange" min="0" max="90" value="14" oninput="setBgDark(this.value)" style="padding:0">
+  <button type="button" class="btn btn-ghost" onclick="hapusBg()" style="padding:9px 8px">🔄 RESET KE BG TEMA</button>
+  <button type="button" class="btn btn-ghost" onclick="toggleBgPanel()" style="padding:9px 8px">TUTUP</button>
+</div>
+
+<div id="senkuPanel" onclick="event.stopPropagation()">
+  <b style="font-size:13px">🧑‍🔬 Gambar Maskot & AI</b>
+  <div id="senkuName" style="font-size:11px;color:#A7F3D0;margin:6px 0;word-break:break-all">PNG / JPG / WEBP</div>
+  <button type="button" class="btn btn-primary" onclick="document.getElementById('senkuFile').click()" style="padding:10px 8px">📁 UPLOAD GAMBAR</button>
+  <input type="file" id="senkuFile" accept="image/*" class="hidden" onchange="onPickSenku(event)">
+  <button type="button" class="btn btn-ghost" onclick="hapusSenku()" style="padding:10px 8px">🗑️ HAPUS GAMBAR</button>
+  <button type="button" class="btn btn-ghost" onclick="toggleSenkuPanel()" style="padding:10px 8px">TUTUP</button>
+</div>
+
+<div id="mascot" onclick="toggleSenkuChatModal(event)">
+  <div class="bubble" id="mascotBubble">Klik aku buat chat & bikin config!</div>
+  <img id="senkuImg" src="" alt="Maskot" style="display:none">
+  <div id="mascotFallback">🧑‍🔬</div>
+  <div><span class="name">AI</span></div>
+</div>
+
+<div id="senkuAiBackdrop" onclick="closeSenkuChatModal()">
+  <div id="senkuAiBox" class="hud-frame" onclick="event.stopPropagation()">
+    <div class="senku-hdr">
+      <div class="senku-hdr-left">
+        <div class="senku-avatar-sm" id="senkuAiAvatar">
+          <img id="senkuAiImg" src="" alt="AI" style="display:none">
+          <span id="senkuAiEmoji">🧑‍🔬</span>
+        </div>
+        <div style="min-width:0;flex:1">
+          <div class="senku-title">✦ AI Assistant Config <span class="senku-badge-tag">DEEPSEEK AI</span></div>
+          <div class="senku-sub" id="senkuAiStateText">DEEPSEEK AUTO READY • SIAP CHAT & CONFIG</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-red" onclick="closeSenkuChatModal()" style="flex:0 0 auto;margin:0;padding:6px 9px;font-size:10px">✖️</button>
+    </div>
+
+    <div class="senku-action-row">
+      <button type="button" class="btn btn-cyan" onclick="testAnimeVoiceLine()" style="flex:1;margin:0;padding:6px 8px;font-size:10px">🎙️ Suara</button>
+      <button type="button" class="btn btn-ghost" onclick="resetSenkuChat()" style="flex:0 0 auto;width:auto;margin:0;padding:6px 10px;font-size:10px">🔄</button>
+    </div>
+
+    <div class="senku-chip-row">
+      <button type="button" class="senku-chip" onclick="quickSenkuCmd('bikin config')">⚡ Bikin Config</button>
+      <button type="button" class="senku-chip" onclick="quickSenkuCmd('daftar payload')">📦 Cek Payload</button>
+      <button type="button" class="senku-chip" onclick="quickSenkuCmd('daftar bug')">🐛 Cek Bug</button>
+      <button type="button" class="senku-chip" onclick="quickSenkuCmd('daftar ssh')">🔑 Cek SSH</button>
+    </div>
+
+    <div id="senkuChatLog"></div>
+    <div id="aiTypingBar">
+      <span class="ai-dots"><i></i><i></i><i></i></span>
+      <span>✧ AI sedang merangkai respon...</span>
+    </div>
+
+    <form class="senku-input-row" onsubmit="sendSenkuPrompt(event); return false;">
+      <input id="senkuPromptInput" type="text" autocomplete="off" enterkeyhint="send" placeholder="Ngobrol bebas atau suruh bikin config...">
+      <button type="submit" class="senku-send-btn">KIRIM ⚡</button>
+    </form>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="top hud-frame">
+    <div class="welcome-wrap"><span class="welcome-text">⚡⚔️ Forum Tunneling By Rio 🔥💠</span></div>
+    <button type="button" id="topMenuBtn" onclick="toggleTopMenu(event)">⋮</button>
+    <div class="hud-accent-line"></div>
+    <div class="clock">
+      <div><b id="jamText">--:--:--</b><br><span id="hariText">Memuat...</span></div>
+      <div style="text-align:right"><span id="tglText">Memuat...</span><br><span id="thnText" style="font-weight:800;padding:2px 8px;border-radius:4px;font-size:10px">----</span></div>
+    </div>
+    <div id="quoteBox">💬 <span id="quoteText">Siap membantu tunneling & ngobrol santai!</span></div>
+  </div>
+
+  <div class="menu">
+    <button type="button" id="btnALL" class="active" onclick="setCat('ALL')">Semua (<span id="cAll">0</span>)</button>
+    <button type="button" onclick="setCat('SG')">🇸🇬 SG</button>
+    <button type="button" onclick="setCat('ID')">🇮🇩 ID</button>
+    <button type="button" onclick="setCat('VIP')">⭐ VIP</button>
+    <button type="button" onclick="setCat('TAMBAH')">➕ Tambah</button>
+    <button type="button" onclick="setCat('BUG')">🐛 Bug (<span id="cBug">0</span>)</button>
+    <button type="button" onclick="setCat('PAYLOAD')">📦 Payload (<span id="cPay">0</span>)</button>
+    <button type="button" onclick="setCat('APLIKASI')">📱 App (<span id="cApp">0</span>)</button>
+    <button type="button" onclick="setCat('CONFIG')">⚙️ Config</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="tTotal">0</b><span>SSH AKTIF</span></div>
+    <div class="stat"><b id="tVip">0</b><span>VIP</span></div>
+    <div class="stat"><b id="tExp">0</b><span>EXP TIMER</span></div>
+  </div>
+
+  <div id="page-list">
+    <div class="card2">
+      <div class="hud-frame search-box-frame">
+        <input id="cari" placeholder="🔍 Cari akun SSH..." oninput="render()" style="margin-bottom:8px;padding-left:12px">
+        <div class="row">
+          <button type="button" class="btn btn-white" onclick="exportData()">⬆ Export</button>
+          <button type="button" class="btn btn-white" onclick="manualSync()">🔄 Sync</button>
+          <button type="button" class="btn btn-white" onclick="document.getElementById('fileImport').click()">⬇ Import</button>
+        </div>
+        <input type="file" id="fileImport" class="hidden" accept=".json" onchange="importData(event)">
+      </div>
+      <div id="list" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div id="page-tambah" class="hidden">
+    <div class="card2 hud-frame anime-panel">
+      <div id="statusBox" class="status">⏳ Menunggu input SSH...</div>
+      <textarea id="tempel" rows="8" placeholder="Tempel format akun SSH di sini..."></textarea>
+      <button type="button" class="btn btn-yellow" onclick="cobaParse()">🔍 LIHAT HASIL</button>
+      <div id="previewBox" class="preview hidden"></div>
+      <select id="kat"><option value="SG">🇸🇬 SG</option><option value="ID">🇮🇩 ID</option><option value="VIP">⭐ VIP</option></select>
+      <input id="nama" placeholder="Nama">
+      <input id="host" placeholder="Host">
+      <input id="user" placeholder="Username">
+      <input id="pass" placeholder="Password">
+      <input id="port" placeholder="Port">
+      <input id="exp" placeholder="Kedaluwarsa">
+      <textarea id="extra" placeholder="SNI / Bug Host"></textarea>
+      <button type="button" class="btn btn-primary" onclick="simpanManual()">💾 SIMPAN</button>
+    </div>
+  </div>
+
+  <div id="page-bug" class="hidden">
+    <div class="card2 hud-frame anime-panel">
+      <h3 style="margin:0 0 10px">🐛 Simpan Bug / Proxy</h3>
+      <input id="bNama" placeholder="Nama Bug (contoh: whatsapp, ilmu pedia, sushiroll)">
+      <select id="bOp"><option value="XL">XL</option><option value="TELKOMSEL">Telkomsel</option><option value="AXIS">Axis</option><option value="INDOSAT">Indosat</option><option value="TRI">Tri</option><option value="UMUM">Umum / All Op</option></select>
+      <input id="bBug" placeholder="Bug Host / Proxy">
+      <input id="bNote" placeholder="Catatan">
+      <button type="button" class="btn btn-primary" onclick="simpanBug()">💾 SIMPAN BUG</button>
+      <input id="cariBug" placeholder="🔍 Cari bug..." oninput="renderBug()" style="margin-top:14px">
+      <div id="listBug" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div id="page-payload" class="hidden">
+    <div class="card2 hud-frame anime-panel">
+      <h3 style="margin:0 0 10px">📦 Simpan Payload</h3>
+      <input id="pNama" placeholder="Nama Payload (contoh: whatsapp, ilmu pedia, sushiroll)">
+      <select id="pOp"><option value="XL">XL</option><option value="TELKOMSEL">Telkomsel</option><option value="AXIS">Axis</option><option value="INDOSAT">Indosat</option><option value="TRI">Tri</option><option value="UMUM">Umum / All Op</option></select>
+      <textarea id="pPayload" rows="7" placeholder="Tempel Payload di sini..."></textarea>
+      <input id="pNote" placeholder="Catatan">
+      <button type="button" class="btn btn-primary" onclick="simpanPayload()">💾 SIMPAN PAYLOAD</button>
+      <input id="cariPay" placeholder="🔍 Cari payload..." oninput="renderPayload()" style="margin-top:14px">
+      <div id="listPay" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div id="page-aplikasi" class="hidden">
+    <div class="card2 hud-frame anime-panel">
+      <h3 style="margin:0 0 10px">📱 Simpan Aplikasi Tunnel</h3>
+      <input id="aNama" placeholder="Nama Aplikasi">
+      <div class="filebox">📁 Import APK / ZIP<br><span id="aFileInfo" style="color:#A7F3D0;font-size:12px">Belum ada file dipilih</span><input type="file" id="aFile" onchange="onPickAppFile()" style="margin-top:8px"></div>
+      <input id="aNote" placeholder="Catatan">
+      <button type="button" class="btn btn-primary" onclick="simpanAplikasi()">💾 SIMPAN APLIKASI</button>
+      <input id="cariApp" placeholder="🔍 Cari aplikasi..." oninput="renderAplikasi()" style="margin-top:14px">
+      <div id="listApp" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div id="page-config" class="hidden">
+    <div class="card2 hud-frame anime-panel">
+      <h3 style="margin:0 0 10px">⚙️ BUAT CONFIG ISEKAI VPN</h3>
+      <label>1. Nama Config</label>
+      <input id="cfgNama" placeholder="Contoh: whatsapp (otomatis pilih Bug & Payload yang cocok)" oninput="onCfgNamaInput()">
+      <label>2. Pilih Akun SSH</label>
+      <select id="cfgAkun" onchange="previewConfig()"><option value="">Pilih SSH</option></select>
+      <label>3. Pilih Bug / Proxy</label>
+      <select id="cfgBug" onchange="onCfgBugChange()"><option value="">Pilih Bug</option></select>
+      <label>4. Pilih Port</label>
+      <select id="cfgPort" onchange="previewConfig()">
+        <option value="443">443 - SSL / TLS</option>
+        <option value="80">80 - HTTP</option>
+      </select>
+      <label>5. Pilih Payload</label>
+      <select id="cfgPayload" onchange="previewConfig()"><option value="">Pilih Payload</option></select>
+      <div id="cfgPreview" class="preview hidden"></div>
+      <button type="button" class="btn btn-green" style="width:100%;margin-top:10px" onclick="downloadConfig('dark')">⬇️ DOWNLOAD .DARK</button>
+      <button type="button" class="btn btn-ghost" onclick="salinConfig()" style="margin-top:6px">📋 SALIN CONFIG</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var isScrollingFast = false;
+var scrollIdleTimer = null;
+var pendingRenderAfterScroll = false;
+window.addEventListener('scroll', function(){
+  isScrollingFast = true;
+  if(scrollIdleTimer) clearTimeout(scrollIdleTimer);
+  scrollIdleTimer = setTimeout(function(){
+    isScrollingFast = false;
+    if(pendingRenderAfterScroll){
+      pendingRenderAfterScroll = false;
+      if(typeof render === 'function') render();
+    }
+  }, 240);
+}, {passive:true});
+
+function pad(n){ return (n<10?'0':'')+n; }
+function updateJam(){
+  try{
+    var now=new Date();
+    var hariArr=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    var blnArr=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    var jamEl=document.getElementById('jamText');
+    if(jamEl) jamEl.textContent=pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    var h=document.getElementById('hariText');
+    if(h) h.textContent=hariArr[now.getDay()];
+    var t=document.getElementById('tglText');
+    if(t) t.textContent=now.getDate()+' '+blnArr[now.getMonth()];
+    var y=document.getElementById('thnText');
+    if(y) y.textContent=now.getFullYear();
+  }catch(e){}
+}
+updateJam();
+setInterval(updateJam,1000);
+document.addEventListener('DOMContentLoaded', updateJam);
+
+var APP_PASS='mozacantik123';
+var userPass='';
+
+function toggleLockPass(){
+  var inp=document.getElementById('lockPass');
+  var btn=document.getElementById('btnShowPass');
+  if(!inp) return;
+  var nextIsText = (inp.type === 'password');
+  try{
+    inp.type = nextIsText ? 'text' : 'password';
+  }catch(e){
+    inp.setAttribute('type', nextIsText ? 'text' : 'password');
+  }
+  if(btn){
+    btn.textContent = nextIsText ? '🙈 Sembunyikan Password' : '👁️ Tampilkan Password';
+  }
+  try{ inp.focus(); }catch(e){}
+}
+function unlock(){
+  var inp=document.getElementById('lockPass');
+  var v=inp ? inp.value : '';
+  if(v===APP_PASS){
+    userPass=v;
+    var lk=document.getElementById('lock');
+    if(lk) lk.style.display='none';
+    var mEl=document.getElementById('mascot');
+    if(mEl) mEl.style.display='block';
+    setTimeout(function(){
+      var b=document.getElementById('mascotBubble');
+      if(b && userPass){ b.textContent='Klik maskot buat chat & bikin config!'; b.classList.add('show'); setTimeout(function(){ b.classList.remove('show'); },3200); }
+    },600);
+    if(typeof startActiveMusic==='function') startActiveMusic(false);
+    if(typeof cloudLoad==='function') setTimeout(function(){ cloudLoad(true); },250);
+  } else {
+    var errEl=document.getElementById('lockErr');
+    if(errEl) errEl.style.display='block';
+  }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var lp=document.getElementById('lockPass');
+  if(lp){
+    lp.addEventListener('keydown',function(e){ if(e.key==='Enter') unlock(); });
+  }
+});
+
+(function(){
+  var c=document.getElementById('particles');
+  if(!c) return;
+  var em=['🍁','🍂','🍁','🍂'];
+  var frag=document.createDocumentFragment();
+  for(var i=0;i<10;i++){
+    var s=document.createElement('div');
+    s.className='petal';
+    s.textContent=em[i%em.length];
+    s.style.left=(Math.random()*100)+'%';
+    s.style.fontSize=(12+Math.random()*10)+'px';
+    s.style.animationDuration=(9+Math.random()*7)+'s';
+    s.style.animationDelay=(Math.random()*6)+'s';
+    frag.appendChild(s);
+  }
+  c.appendChild(frag);
+})();
+
+var QUOTES=[
+  'Siap membantu tunneling & ngobrol santai!',
+  'Klik maskot buat suruh bikin config!',
+  'Rakit config .dark cepat, rapi, dan anti ribet!',
+  'Coba terus sampai konek lancar!'
+];
+var quoteIdx=0;
+function gantiQuoteAtas(){
+  var el=document.getElementById('quoteText');
+  if(!el) return;
+  el.classList.add('fade');
+  setTimeout(function(){
+    quoteIdx=(quoteIdx+1)%QUOTES.length;
+    el.textContent=QUOTES[quoteIdx].replace(/\s*-\s*AI\s*$/i, '');
+    el.classList.remove('fade');
+  },200);
+}
+if(document.getElementById('quoteText')) document.getElementById('quoteText').textContent=QUOTES[0];
+setInterval(gantiQuoteAtas,6000);
+
+function openSenkuChatModal(){
+  if(!userPass) return;
+  var bd=document.getElementById('senkuAiBackdrop');
+  var b=document.getElementById('mascotBubble');
+  if(b) b.classList.remove('show');
+  if(bd){
+    bd.classList.add('open');
+    var log=document.getElementById('senkuChatLog');
+    if(log) log.scrollTop=log.scrollHeight;
+    playAiChatNotifChime();
+    setTimeout(function(){
+      var inp=document.getElementById('senkuPromptInput');
+      if(inp) inp.focus();
+    },70);
+  }
+}
+function closeSenkuChatModal(){
+  var bd=document.getElementById('senkuAiBackdrop');
+  if(bd) bd.classList.remove('open');
+}
+function toggleSenkuChatModal(e){
+  if(e) e.stopPropagation();
+  if(!userPass) return;
+  var bd=document.getElementById('senkuAiBackdrop');
+  if(bd && bd.classList.contains('open')) closeSenkuChatModal();
+  else openSenkuChatModal();
+}
+function mascotTalk(){
+  if(!userPass) return;
+  openSenkuChatModal();
+}
+
+var animeVoiceAudio = document.getElementById('animeVoiceAudio');
+
+var SOFT_ANIME_CHIMES = {
+  choose_ssh: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',
+  choose_port: 'https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3',
+  config_ready: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
+  greeting: 'https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3',
+  chat_reply: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'
+};
+
+var _aiNotifCtx = null;
+function playAiChatNotifChime(){
+  try{
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(AudioCtx){
+      if(!_aiNotifCtx) _aiNotifCtx = new AudioCtx();
+      if(_aiNotifCtx.state === 'suspended') _aiNotifCtx.resume();
+      var now = _aiNotifCtx.currentTime;
+
+      var levelUpNotes = [
+        { freq: 523.25, t: 0.00, dur: 0.14, vol: 0.11 },
+        { freq: 659.25, t: 0.065, dur: 0.14, vol: 0.12 },
+        { freq: 783.99, t: 0.13, dur: 0.15, vol: 0.13 },
+        { freq: 987.77, t: 0.195, dur: 0.16, vol: 0.14 },
+        { freq: 1046.50, t: 0.26, dur: 0.22, vol: 0.15 },
+        { freq: 1318.51, t: 0.33, dur: 0.26, vol: 0.16 },
+        { freq: 1567.98, t: 0.40, dur: 0.32, vol: 0.17 },
+        { freq: 2093.00, t: 0.48, dur: 0.56, vol: 0.18 }
+      ];
+
+      levelUpNotes.forEach(function(n){
+        var mainOsc = _aiNotifCtx.createOscillator();
+        var overOsc = _aiNotifCtx.createOscillator();
+        var env = _aiNotifCtx.createGain();
+
+        mainOsc.type = 'sine';
+        overOsc.type = 'triangle';
+        mainOsc.frequency.setValueAtTime(n.freq, now + n.t);
+        overOsc.frequency.setValueAtTime(n.freq * 2, now + n.t);
+
+        env.gain.setValueAtTime(0.0005, now + n.t);
+        env.gain.exponentialRampToValueAtTime(n.vol, now + n.t + 0.012);
+        env.gain.exponentialRampToValueAtTime(0.0004, now + n.t + n.dur);
+
+        mainOsc.connect(env);
+        overOsc.connect(env);
+        env.connect(_aiNotifCtx.destination);
+
+        mainOsc.start(now + n.t);
+        overOsc.start(now + n.t);
+        mainOsc.stop(now + n.t + n.dur + 0.02);
+        overOsc.stop(now + n.t + n.dur + 0.02);
+      });
+      return;
+    }
+  }catch(e){}
+  try{
+    animeVoiceAudio.pause();
+    animeVoiceAudio.currentTime = 0;
+    animeVoiceAudio.src = SOFT_ANIME_CHIMES.chat_reply;
+    animeVoiceAudio.volume = 0.85;
+    animeVoiceAudio.play().catch(function(){});
+  }catch(e2){}
+}
+
+var JP_ANIME_LINES = {
+  choose_ssh: 'SSH wo erande kudasai!',
+  choose_port: 'Pooto wo erande kudasai!',
+  config_ready: 'Konfigu ga kansei shimashita!',
+  greeting: 'Hai, nani ka tetsudaimashou ka?'
+};
+
+function speakJapaneseAnime(key){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    var phrase = JP_ANIME_LINES[key] || 'Hai!';
+    var utter = new SpeechSynthesisUtterance(phrase);
+    var voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+    var jpVoice = null;
+    for(var i=0;i<voices.length;i++){
+      var lang = String(voices[i].lang||'').toLowerCase();
+      var nm = String(voices[i].name||'').toLowerCase();
+      if(lang.indexOf('ja')>-1 || lang.indexOf('jp')>-1){
+        jpVoice = voices[i];
+        if(nm.indexOf('haruka')>-1 || nm.indexOf('nanami')>-1 || nm.indexOf('kyoko')>-1 || nm.indexOf('female')>-1){
+          break;
+        }
+      }
+    }
+    if(jpVoice){
+      utter.voice = jpVoice;
+      utter.lang = jpVoice.lang;
+    } else {
+      utter.lang = 'ja-JP';
+    }
+    utter.pitch = 1.28;
+    utter.rate = 1.05;
+    utter.volume = 0.95;
+    window.speechSynthesis.speak(utter);
+  }catch(e){}
+}
+
+function playAnimeVoiceLine(key){
+  var chimeUrl = SOFT_ANIME_CHIMES[key] || SOFT_ANIME_CHIMES.greeting;
+  try{
+    animeVoiceAudio.pause();
+    animeVoiceAudio.currentTime = 0;
+    animeVoiceAudio.src = chimeUrl;
+    animeVoiceAudio.volume = 0.85;
+    var p = animeVoiceAudio.play();
+    if(p && typeof p.then === 'function'){
+      p.then(function(){
+        setTimeout(function(){ speakJapaneseAnime(key); }, 160);
+      }).catch(function(){
+        speakJapaneseAnime(key);
+      });
+    } else {
+      speakJapaneseAnime(key);
+    }
+  }catch(e){
+    speakJapaneseAnime(key);
+  }
+}
+
+function testAnimeVoiceLine(){
+  playAnimeVoiceLine('config_ready');
+  showToast('🎙️ Memutar suara anime...');
+}
+
+function fileToDataURL(file){
+  return new Promise(function(res,rej){
+    var r=new FileReader();
+    r.onload=function(){ res(r.result); };
+    r.onerror=function(){ rej(r.error||new Error('FileReader fail')); };
+    r.readAsDataURL(file);
+  });
+}
+function compressImageDataURL(dataUrl, maxW, quality){
+  return new Promise(function(res,rej){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.naturalWidth, h=img.naturalHeight;
+      if(w>maxW){ var s=maxW/w; w=Math.floor(w*s); h=Math.floor(h*s); }
+      var canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+      var ctx=canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+      res(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror=function(){ rej(new Error('img load fail')); };
+    img.src=dataUrl;
+  });
+}
+function setLabelText(id, txt){ var el=document.getElementById(id); if(el) el.textContent=txt; }
+
+function syncBothSenkuImages(dataUrl){
+  var mImg=document.getElementById('senkuImg');
+  var mFb=document.getElementById('mascotFallback');
+  var aiImg=document.getElementById('senkuAiImg');
+  var aiEm=document.getElementById('senkuAiEmoji');
+  if(dataUrl && dataUrl.indexOf('data:image')===0){
+    if(mImg){ mImg.src=dataUrl; mImg.style.display='block'; }
+    if(mFb){ mFb.style.display='none'; }
+    if(aiImg){ aiImg.src=dataUrl; aiImg.style.display='block'; }
+    if(aiEm){ aiEm.style.display='none'; }
+  } else {
+    if(mImg){ mImg.src=''; mImg.style.display='none'; }
+    if(mFb){ mFb.style.display='flex'; }
+    if(aiImg){ aiImg.src=''; aiImg.style.display='none'; }
+    if(aiEm){ aiEm.style.display='inline'; }
+  }
+}
+
+var SENKU_MAX_MB=12;
+function senkuShow(dataUrl, name){
+  syncBothSenkuImages(dataUrl);
+  setLabelText('senkuName', 'Tersimpan: '+name);
+}
+function loadSavedSenku(){
+  try{
+    var d=localStorage.getItem('moza_senku_data');
+    var n=localStorage.getItem('moza_senku_name')||'AI';
+    if(d && d.indexOf('data:image')===0){ senkuShow(d, n); return true; }
+  }catch(e){}
+  syncBothSenkuImages('');
+  return false;
+}
+loadSavedSenku();
+
+function closeAllPanels(){
+  ['topMenu','musicPanel','bgPanel','senkuPanel'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+}
+function openSenkuFromMenu(){ closeAllPanels(); document.getElementById('senkuPanel').style.display='block'; closeSenkuChatModal(); }
+function toggleSenkuPanel(){ var p=document.getElementById('senkuPanel'); p.style.display=(p.style.display==='block'?'none':'block'); }
+async function onPickSenku(e){
+  var f=e.target.files[0]; if(!f) return;
+  if(f.size/(1024*1024) > SENKU_MAX_MB){ showToast('❌ Foto kegedean!'); e.target.value=''; return; }
+  showToast('⏳ Baca '+f.name+'...');
+  try{
+    var dataUrl=await fileToDataURL(f);
+    if(dataUrl.length > 750000){
+      dataUrl=await compressImageDataURL(dataUrl, 640, 0.75);
+    }
+    try{ localStorage.setItem('moza_senku_data', dataUrl); localStorage.setItem('moza_senku_name', f.name); }
+    catch(errStorage){
+      dataUrl=await compressImageDataURL(dataUrl, 480, 0.68);
+      localStorage.setItem('moza_senku_data', dataUrl); localStorage.setItem('moza_senku_name', f.name);
+    }
+    senkuShow(dataUrl, f.name);
+    await forceCloudSyncNow('Maskot');
+  }catch(err){ showToast('❌ Gagal upload foto'); }
+  e.target.value='';
+}
+async function hapusSenku(){
+  if(!confirm('Hapus gambar maskot & AI?')) return;
+  try{ localStorage.removeItem('moza_senku_data'); localStorage.removeItem('moza_senku_name'); }catch(e){}
+  syncBothSenkuImages('');
+  setLabelText('senkuName', 'PNG / JPG / WEBP');
+  await forceCloudSyncNow('Hapus Maskot');
+  showToast('🗑️ Gambar dihapus');
+}
+
+var BASE_THEMES = [
+  {id:'anime_1', icon:'🧪', name:'Science Katana', acc:'#22C55E', acc2:'#06B6D4', acc3:'#0EA5E9'},
+  {id:'jjk', icon:'👁️', name:'Jujutsu Kaisen', acc:'#A855F7', acc2:'#0EA5E9', acc3:'#38BDF8'},
+  {id:'onepiece', icon:'🏴‍☠️', name:'One Piece', acc:'#38BDF8', acc2:'#F59E0B', acc3:'#22C55E'},
+  {id:'naruto', icon:'🦊', name:'Naruto Shippuden', acc:'#F97316', acc2:'#38BDF8', acc3:'#FACC15'},
+  {id:'demonslayer', icon:'🌊', name:'Demon Slayer', acc:'#06B6D4', acc2:'#0EA5E9', acc3:'#EF4444'},
+  {id:'aot', icon:'⚔️', name:'Attack on Titan', acc:'#10B981', acc2:'#94A3B8', acc3:'#EF4444'},
+  {id:'sololeveling', icon:'🌑', name:'Solo Leveling', acc:'#8B5CF6', acc2:'#38BDF8', acc3:'#6366F1'},
+  {id:'chainsawman', icon:'🪚', name:'Chainsaw Man', acc:'#EF4444', acc2:'#F97316', acc3:'#FACC15'},
+  {id:'bluelock', icon:'⚽', name:'Blue Lock', acc:'#2563EB', acc2:'#38BDF8', acc3:'#A855F7'},
+  {id:'spyxfamily', icon:'🕵️', name:'Spy x Family', acc:'#38BDF8', acc2:'#4ADE80', acc3:'#FACC15'},
+  {id:'frieren', icon:'🧝‍♀️', name:'Frieren', acc:'#60A5FA', acc2:'#A78BFA', acc3:'#FDE68A'},
+  {id:'rezero', icon:'❄️', name:'Re:Zero', acc:'#C084FC', acc2:'#38BDF8', acc3:'#38BDF8'},
+  {id:'overlord', icon:'💀', name:'Overlord', acc:'#9333EA', acc2:'#F59E0B', acc3:'#EF4444'},
+  {id:'sao', icon:'🗡️', name:'Sword Art Online', acc:'#0EA5E9', acc2:'#22D3EE', acc3:'#EF4444'},
+  {id:'bleach', icon:'🌙', name:'Bleach', acc:'#F97316', acc2:'#E2E8F0', acc3:'#38BDF8'},
+  {id:'dragonball', icon:'🐉', name:'Dragon Ball Super', acc:'#FACC15', acc2:'#38BDF8', acc3:'#EF4444'},
+  {id:'hxh', icon:'🎣', name:'Hunter x Hunter', acc:'#22C55E', acc2:'#A855F7', acc3:'#FACC15'},
+  {id:'tokyoghoul', icon:'🖤', name:'Tokyo Ghoul', acc:'#E11D48', acc2:'#94A3B8', acc3:'#A855F7'},
+  {id:'codegeass', icon:'👑', name:'Code Geass', acc:'#DC2626', acc2:'#FACC15', acc3:'#A855F7'},
+  {id:'deathnote', icon:'📓', name:'Death Note', acc:'#94A3B8', acc2:'#EF4444', acc3:'#38BDF8'},
+  {id:'cyberpunk', icon:'⚡', name:'Cyberpunk Edgerunners', acc:'#FACC15', acc2:'#0EA5E9', acc3:'#22D3EE'},
+  {id:'bocchi', icon:'🎸', name:'Bocchi the Rock!', acc:'#38BDF8', acc2:'#FACC15', acc3:'#38BDF8'},
+  {id:'oshinoko', icon:'🌟', name:'Oshi no Ko', acc:'#0EA5E9', acc2:'#A855F7', acc3:'#FACC15'},
+  {id:'mushoku', icon:'🔮', name:'Mushoku Tensei', acc:'#3B82F6', acc2:'#22C55E', acc3:'#F59E0B'},
+  {id:'konosuba', icon:'💧', name:'Konosuba', acc:'#38BDF8', acc2:'#FACC15', acc3:'#0EA5E9'},
+  {id:'tensura', icon:'🌀', name:'Tensura (Slime)', acc:'#60A5FA', acc2:'#34D399', acc3:'#38BDF8'},
+  {id:'eminence', icon:'🧥', name:'Eminence in Shadow', acc:'#A855F7', acc2:'#EF4444', acc3:'#38BDF8'},
+  {id:'cote', icon:'♟️', name:'Classroom of the Elite', acc:'#818CF8', acc2:'#EF4444', acc3:'#38BDF8'},
+  {id:'hellsparadise', icon:'🌺', name:'Hells Paradise', acc:'#F97316', acc2:'#22C55E', acc3:'#FACC15'},
+  {id:'dandadan', icon:'👽', name:'Dandadan', acc:'#EF4444', acc2:'#22D3EE', acc3:'#FACC15'},
+  {id:'kaiju8', icon:'💥', name:'Kaiju No. 8', acc:'#84CC16', acc2:'#38BDF8', acc3:'#F97316'},
+  {id:'sakamoto', icon:'🍜', name:'Sakamoto Days', acc:'#F59E0B', acc2:'#EF4444', acc3:'#38BDF8'},
+  {id:'violet', icon:'✉️', name:'Violet Evergarden', acc:'#38BDF8', acc2:'#38BDF8', acc3:'#FDE68A'},
+  {id:'fmab', icon:'⚗️', name:'Fullmetal Alchemist', acc:'#FACC15', acc2:'#DC2626', acc3:'#38BDF8'},
+  {id:'steinsgate', icon:'⏳', name:'Steins;Gate', acc:'#22C55E', acc2:'#F97316', acc3:'#A855F7'},
+  {id:'eva', icon:'🤖', name:'Neon Genesis Evangelion', acc:'#A855F7', acc2:'#22C55E', acc3:'#EF4444'},
+  {id:'fairytail', icon:'🔥', name:'Fairy Tail', acc:'#F97316', acc2:'#0EA5E9', acc3:'#38BDF8'},
+  {id:'blackclover', icon:'🍀', name:'Black Clover', acc:'#22C55E', acc2:'#EF4444', acc3:'#FACC15'},
+  {id:'kagurabachi', icon:'🐟', name:'Kagurabachi', acc:'#38BDF8', acc2:'#EF4444', acc3:'#E2E8F0'}
+];
+
+var EXTRA_ANIME_TITLES = [
+  'My Hero Academia','Haikyuu!!','Kuroko no Basketball','Slam Dunk','Your Name (Kimi no Na wa)',
+  'Weathering With You','Suzume','A Silent Voice','Your Lie in April','Clannad After Story',
+  'Toradora!','Kaguya-sama: Love is War','Horimiya','Bunny Girl Senpai','Quintessential Quintuplets',
+  'Rent-a-Girlfriend','Oregairu','Hyouka','Nichijou','Azumanga Daioh',
+  'Gintama','Mob Psycho 100','One Punch Man','Mashle: Magic and Muscles','Bungo Stray Dogs',
+  'Fire Force','Soul Eater','D.Gray-man','Black Butler','Noragami',
+  'Seraph of the End','Akame ga Kill!','Kill la Kill','Gurren Lagann','Cowboy Bebop',
+  'Samurai Champloo','Trigun Stampede','Monster','Psycho-Pass','86 Eighty-Six',
+  'Lycoris Recoil','Akiba Maid War','Call of the Night','Insomniacs After School','Skip and Loafer',
+  'Frieren Beyond Journey','Dungeon Meshi','Apothecary Diaries','Shangri-La Frontier','Solo Camping',
+  'Sword Art Online Alicization','DanMachi','No Game No Life','Date A Live','High School DxD',
+  'Tokyo Revengers','Wind Breaker','Hell Teacher Nube','Yu Yu Hakusho','Rurouni Kenshin',
+  'Inuyasha','Cardcaptor Sakura','Sailor Moon','Madoka Magica','Made in Abyss'
+];
+
+var COOL_STYLES = [
+  {bg1:'#050b14', bg2:'#0c2538', line:'#22c55e', glow:'#06b6d4', tag:'SCIENCE KATANA'},
+  {bg1:'#0b0518', bg2:'#27104a', line:'#c084fc', glow:'#0ea5e9', tag:'DOMAIN SHADOW'},
+  {bg1:'#06111f', bg2:'#0e355c', line:'#38bdf8', glow:'#f59e0b', tag:'HORIZON VOYAGE'},
+  {bg1:'#170805', bg2:'#45170a', line:'#f97316', glow:'#facc15', tag:'BLAZE SHINOBI'},
+  {bg1:'#05141a', bg2:'#093a4a', line:'#06b6d4', glow:'#ef4444', tag:'TIDE BLADE'},
+  {bg1:'#12060a', bg2:'#3b0d1b', line:'#ef4444', glow:'#fb923c', tag:'CRIMSON ECLIPSE'}
+];
+
+var ANIME_THEMES = (function(){
+  var icons = ['⚡','💠','🔥','❄️','🌙','⭐','🔮','⚔️','🧪','✨','🌀','💫','🌊','🍀','🎭'];
+  var out = [];
+  for(var i=0;i<BASE_THEMES.length;i++){
+    var b = BASE_THEMES[i];
+    var st = COOL_STYLES[i % COOL_STYLES.length];
+    out.push({
+      id: b.id,
+      icon: b.icon,
+      name: b.name,
+      acc: b.acc,
+      acc2: b.acc2,
+      acc3: b.acc3,
+      border: b.acc,
+      bg1: st.bg1,
+      bg2: st.bg2,
+      line: b.acc,
+      glow: b.acc2,
+      tag: b.name.toUpperCase()
+    });
+  }
+  for(var j=0;j<EXTRA_ANIME_TITLES.length && out.length<100;j++){
+    var title = EXTRA_ANIME_TITLES[j];
+    var st2 = COOL_STYLES[out.length % COOL_STYLES.length];
+    var ic = icons[out.length % icons.length];
+    out.push({
+      id: 'anime_'+(out.length+1),
+      icon: ic,
+      name: title,
+      acc: st2.line,
+      acc2: st2.glow,
+      acc3: '#38BDF8',
+      border: st2.line,
+      bg1: st2.bg1,
+      bg2: st2.bg2,
+      line: st2.line,
+      glow: st2.glow,
+      tag: title.toUpperCase()
+    });
+  }
+  return out;
+})();
+
+var animeBgCache = {};
+function generateCoolAnimeBgDataURL(themeObj, idx){
+  if(animeBgCache[idx]) return animeBgCache[idx];
+  var c = document.createElement('canvas');
+  c.width = 480;
+  c.height = 854;
+  var ctx = c.getContext('2d');
+
+  var bg1 = themeObj.bg1 || '#060c18';
+  var bg2 = themeObj.bg2 || '#132744';
+  var lineCol = themeObj.line || '#22c55e';
+  var glowCol = themeObj.glow || '#06b6d4';
+
+  var g = ctx.createLinearGradient(0, 0, c.width, c.height);
+  g.addColorStop(0, bg1);
+  g.addColorStop(0.55, bg2);
+  g.addColorStop(1, '#04070f');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, c.width, c.height);
+
+  ctx.save();
+  ctx.strokeStyle = glowCol + '28';
+  ctx.lineWidth = 1.4;
+  var step = 36 + (idx % 18);
+  for(var x = -360; x < c.width + 360; x += step){
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + 240, c.height);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  var slashY = 200 + ((idx * 43) % 420);
+  ctx.strokeStyle = lineCol + '66';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, slashY + 60);
+  ctx.lineTo(c.width, slashY - 45);
+  ctx.stroke();
+
+  ctx.strokeStyle = glowCol + '55';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, slashY + 75);
+  ctx.lineTo(c.width, slashY - 30);
+  ctx.stroke();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.font = '900 30px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText((themeObj.tag || 'ANIME').slice(0, 22), c.width / 2, slashY - 68);
+
+  ctx.fillStyle = lineCol + '2b';
+  ctx.font = '800 12px monospace';
+  ctx.fillText('COOL ANIME ARCHIVE #' + (idx + 1), c.width / 2, c.height - 56);
+  ctx.restore();
+
+  var url = c.toDataURL('image/jpeg', 0.75);
+  animeBgCache[idx] = url;
+  return url;
+}
+
+var currentAnimeBgIdx = 0;
+var customBgActive = false;
+
+function applyCoolAnimeBgByThemeIndex(idx, savePref, skipSync){
+  var safeIdx = ((idx % ANIME_THEMES.length) + ANIME_THEMES.length) % ANIME_THEMES.length;
+  currentAnimeBgIdx = safeIdx;
+  customBgActive = false;
+  var th = ANIME_THEMES[safeIdx];
+  var dataUrl = generateCoolAnimeBgDataURL(th, safeIdx);
+  document.getElementById('bgLayer').style.backgroundImage = "url('" + dataUrl + "')";
+  setLabelText('bgCurrentInfo', 'BG #' + (safeIdx + 1) + ': ' + th.name);
+  if(savePref){
+    try{
+      localStorage.setItem('moza_bg_mode', 'anime');
+      localStorage.setItem('moza_bg_anime_idx', String(safeIdx));
+    }catch(e){}
+    if(!skipSync && userPass) forceCloudSyncNow('BG');
+  }
+  var srch = document.getElementById('bgSearchInput');
+  renderAnimeBgList(srch ? srch.value : '');
+}
+
+function renderAnimeBgList(filterStr){
+  var box = document.getElementById('animeBgList');
+  if(!box) return;
+  var q = String(filterStr||'').toLowerCase().trim();
+  var frag = document.createDocumentFragment();
+  for(var i=0;i<ANIME_THEMES.length;i++){
+    var th = ANIME_THEMES[i];
+    if(q && (th.name+' '+(i+1)).toLowerCase().indexOf(q)===-1) continue;
+    var div = document.createElement('div');
+    div.className = 'preset-item' + (!customBgActive && currentAnimeBgIdx === i ? ' active' : '');
+    div.style.borderLeft = '3px solid ' + th.acc;
+    div.textContent = (i+1) + '. ' + th.icon + ' ' + th.name;
+    div.onclick = (function(idx, nm){
+      return function(){
+        applyCoolAnimeBgByThemeIndex(idx, true);
+        showToast('🖼️ BG Cool: #'+(idx+1)+' '+nm);
+      };
+    })(i, th.name);
+    frag.appendChild(div);
+  }
+  box.innerHTML = '';
+  box.appendChild(frag);
+}
+
+function randomAnimeBg(){
+  var r = Math.floor(Math.random() * ANIME_THEMES.length);
+  applyCoolAnimeBgByThemeIndex(r, true);
+  showToast('🎲 BG Cool: #'+(r+1)+' '+ANIME_THEMES[r].name);
+}
+
+function findAnimeThemeIndex(id){
+  for(var i=0;i<ANIME_THEMES.length;i++){
+    if(ANIME_THEMES[i].id===id) return i;
+  }
+  return 0;
+}
+
+function renderAnimeThemeList(filterStr){
+  var box=document.getElementById('animeThemeList');
+  if(!box) return;
+  var q=String(filterStr||'').toLowerCase().trim();
+  var cur=document.body.getAttribute('data-theme')||'anime_1';
+  var frag=document.createDocumentFragment();
+  for(var idx=0;idx<ANIME_THEMES.length;idx++){
+    var th=ANIME_THEMES[idx];
+    if(q && (th.name+' '+th.id+' '+(idx+1)).toLowerCase().indexOf(q)===-1) continue;
+    var btn=document.createElement('button');
+    btn.type='button';
+    btn.className=(cur===th.id?'active-theme':'');
+    btn.style.borderLeft='3px solid '+th.acc;
+    btn.textContent=(idx+1)+'. '+th.icon+' '+th.name;
+    btn.onclick=(function(tid){ return function(){ setTheme(tid); }; })(th.id);
+    frag.appendChild(btn);
+  }
+  box.innerHTML='';
+  box.appendChild(frag);
+}
+
+function filterThemeList(v){
+  renderAnimeThemeList(v);
+}
+
+function getThemeFontPair(th){
+  return {
+    body: "'M PLUS Rounded 1c', 'Plus Jakarta Sans', sans-serif",
+    display: "'Chakra Petch', 'M PLUS Rounded 1c', sans-serif",
+    mono: "'Share Tech Mono', ui-monospace, monospace"
+  };
+}
+
+function applyThemeVisualOnly(t){
+  var idx=findAnimeThemeIndex(t);
+  var th=ANIME_THEMES[idx];
+  var fonts=getThemeFontPair(th);
+  document.body.setAttribute('data-theme', th.id);
+  document.body.style.setProperty('--acc', th.acc);
+  document.body.style.setProperty('--acc2', th.acc2);
+  document.body.style.setProperty('--acc3', th.acc3);
+  document.body.style.setProperty('--hud-border', th.acc);
+  document.body.style.setProperty('--theme-font-body', fonts.body);
+  document.body.style.setProperty('--theme-font-display', fonts.display);
+  document.body.style.setProperty('--theme-font-mono', fonts.mono);
+  var badgeEl=document.querySelector('.senku-badge-tag');
+  if(badgeEl) badgeEl.textContent=sanitizeAssistantText('AI HUD');
+  var subEl=document.getElementById('senkuAiStateText');
+  if(subEl && subEl.textContent.indexOf('[')===0){
+    subEl.textContent=sanitizeAssistantText('SIAP NGOBROL & CONFIG');
+  }
+  return idx;
+}
+
+async function setTheme(t){
+  var idx=applyThemeVisualOnly(t);
+  var th=ANIME_THEMES[idx];
+  try{ localStorage.setItem('moza_theme', th.id); }catch(e){}
+  applyCoolAnimeBgByThemeIndex(idx, true, true);
+  var srch=document.getElementById('themeSearchInput');
+  renderAnimeThemeList(srch ? srch.value : '');
+  document.getElementById('topMenu').style.display='none';
+  if(userPass) await forceCloudSyncNow('Tema & BG');
+  showToast('🎨 Tema & BG: '+th.name);
+}
+
+(function initTheme(){
+  var savedTheme='anime_1';
+  try{ savedTheme=localStorage.getItem('moza_theme')||'anime_1'; }catch(e){}
+  applyThemeVisualOnly(savedTheme);
+  renderAnimeThemeList('');
+})();
+
+var MAX_APP_SIZE=120*1024*1024;
+function toggleTopMenu(e){
+  if(e) e.stopPropagation();
+  var m=document.getElementById('topMenu');
+  var isOpen=(m.style.display==='block');
+  closeAllPanels();
+  if(!isOpen){
+    m.style.display='block';
+    m.scrollTop=0;
+    closeSenkuChatModal();
+  }
+}
+function openMusicFromMenu(){ closeAllPanels(); document.getElementById('musicPanel').style.display='block'; renderAnimeMusicList(''); }
+function openBgFromMenu(){ closeAllPanels(); document.getElementById('bgPanel').style.display='block'; renderAnimeBgList(''); }
+document.addEventListener('click', function(e){
+  ['topMenu','musicPanel','bgPanel','senkuPanel'].forEach(function(id){
+    var p=document.getElementById(id);
+    if(p && p.style.display==='block' && !p.contains(e.target) && !e.target.closest('#topMenuBtn')){
+      p.style.display='none';
+    }
+  });
+});
+
+function loadSavedBg(){
+  try{
+    var mode = localStorage.getItem('moza_bg_mode') || 'anime';
+    var dark = localStorage.getItem('moza_bg_dark') || '14';
+    document.getElementById('bgOverlay').style.background='rgba(5,8,17,'+(dark/100)+')';
+    var r=document.getElementById('bgDarkRange'); if(r) r.value=dark;
+
+    if(mode === 'custom'){
+      var d=localStorage.getItem('moza_bg_data');
+      if(d && d.indexOf('data:image')===0){
+        customBgActive = true;
+        document.getElementById('bgLayer').style.backgroundImage="url('"+d+"')";
+        setLabelText('bgCurrentInfo', 'Custom: '+(localStorage.getItem('moza_bg_name')||'Uploaded BG'));
+        renderAnimeBgList('');
+        return true;
+      }
+    }
+    var savedTheme = localStorage.getItem('moza_theme') || 'anime_1';
+    var themeIdx = findAnimeThemeIndex(savedTheme);
+    var savedIdx = localStorage.getItem('moza_bg_anime_idx');
+    var idxToUse = (savedIdx !== null && !isNaN(parseInt(savedIdx, 10))) ? parseInt(savedIdx, 10) : themeIdx;
+    applyCoolAnimeBgByThemeIndex(idxToUse, false, true);
+    return true;
+  }catch(e){
+    applyCoolAnimeBgByThemeIndex(0, false, true);
+    return false;
+  }
+}
+function toggleBgPanel(){ var p=document.getElementById('bgPanel'); p.style.display=(p.style.display==='block'?'none':'block'); }
+async function setBgDark(v){
+  document.getElementById('bgOverlay').style.background='rgba(5,8,17,'+(v/100)+')';
+  try{ localStorage.setItem('moza_bg_dark', String(v)); }catch(e){}
+  if(userPass) await forceCloudSyncNow('Gelap BG');
+}
+async function onPickBg(e){
+  var f=e.target.files[0]; if(!f) return;
+  if(f.size/(1024*1024) > 12){ showToast('❌ Background kegedean!'); e.target.value=''; return; }
+  showToast('⏳ Baca background...');
+  try{
+    var dataUrl=await fileToDataURL(f);
+    if(dataUrl.length > 850000){
+      dataUrl=await compressImageDataURL(dataUrl, 960, 0.72);
+    }
+    try{
+      localStorage.setItem('moza_bg_mode', 'custom');
+      localStorage.setItem('moza_bg_data', dataUrl);
+      localStorage.setItem('moza_bg_name', f.name);
+      localStorage.setItem('moza_bg_dark', '14');
+    }
+    catch(errStorage){
+      dataUrl=await compressImageDataURL(dataUrl, 640, 0.65);
+      localStorage.setItem('moza_bg_mode', 'custom');
+      localStorage.setItem('moza_bg_data', dataUrl);
+      localStorage.setItem('moza_bg_name', f.name);
+      localStorage.setItem('moza_bg_dark', '14');
+    }
+    customBgActive = true;
+    document.getElementById('bgLayer').style.backgroundImage="url('"+dataUrl+"')";
+    document.getElementById('bgOverlay').style.background='rgba(5,8,17,0.14)';
+    var r=document.getElementById('bgDarkRange'); if(r) r.value=14;
+    setLabelText('bgCurrentInfo', 'Custom: '+f.name);
+    renderAnimeBgList('');
+    await forceCloudSyncNow('BG Custom');
+  }catch(err){ showToast('❌ Gagal nyimpen background'); }
+  e.target.value='';
+}
+async function hapusBg(){
+  if(!confirm('Reset background ke BG sesuai tema aktif?')) return;
+  try{
+    localStorage.removeItem('moza_bg_data');
+    localStorage.removeItem('moza_bg_name');
+    localStorage.setItem('moza_bg_mode', 'anime');
+  }catch(e){}
+  var curTheme = document.body.getAttribute('data-theme') || 'anime_1';
+  applyCoolAnimeBgByThemeIndex(findAnimeThemeIndex(curTheme), true);
+  await forceCloudSyncNow('Reset BG');
+  showToast('🔄 Background diset ke tema aktif');
+}
+
+var REAL_ANIME_SONGS = [
+  'LiSA Gurenge Demon Slayer','Kenshi Yonezu Kick Back Chainsaw Man','YOASOBI Idol Oshi no Ko','Creepy Nuts Bling Bang Bang Born Mashle','KANA-BOON Silhouette Naruto',
+  'TK from Ling tosite sigure Unravel Tokyo Ghoul','RADWIMPS Zenzenzense Your Name','Eve Kaikai Kitan Jujutsu Kaisen','Aimer Zankyosanka Demon Slayer','King Gnu Specialz Jujutsu Kaisen',
+  'Yorushika Sunny Frieren','Vaundy Chainsaws Blood Chainsaw Man','Linked Horizon Guren no Yumiya Attack on Titan','UVERworld Touch Off Promised Neverland','Bump of Chicken Souvenir Spy x Family',
+  'Official Hige Dandism Cry Baby Tokyo Revengers','ASIAN KUNG-FU GENERATION Haruka Kanata Naruto','FLOW GO!!! Naruto','Myth and Roid Voracity Overlord','OxT Clattanoia Overlord',
+  'Lisa Crossing Field Sword Art Online','Eir Aoi IGNITE Sword Art Online','Yui again Fullmetal Alchemist Brotherhood','Nico Touches the Walls Hologram Fullmetal Alchemist','Two Mix Rhythm Emotion Gundam Wing',
+  'Hironobu Kageyama We Gotta Power Dragon Ball Z','Taiiku Okazaki Kizuna My Hero Academia','Kenshi Yonezu Peace Sign My Hero Academia','Spyair Imagination Haikyuu','Burnout Syndromes Fly High Haikyuu',
+  'Granrodeo Can Do Kuroko no Basketball','Mrs GREEN APPLE Inferno Fire Force','Aimer Kataomoi','LiSA Homura Demon Slayer','milet anytime anywhere Frieren',
+  'Zutomayo Darken','Hoshino Gen Comedy Spy x Family','Kenshi Yonezu Lady','yama Colors Spy x Family','Natori Overdose',
+  'imase NIGHT DANCER','Tatsuya Kitani Where Our Blue Is Jujutsu Kaisen','Hiroyuki Sawano Vogel im Kafig Attack on Titan','Shiro Sagisu Treachery Bleach','Koji Wada Butter-Fly Digimon Adventure',
+  'Wi-Fi We Are One Piece','Hiroshi Kitadani We Are One Piece','Ado New Genesis One Piece Film Red','Ado Usseewa','Ado Show'
+];
+var ANIME_EXTRA_QUERIES = ['anime opening ost','anime ending theme','japanese anime song','anime piano ost','anime soundtrack','jpop anime theme','anime battle ost','anime emotional ost'];
+var ANIME_100_PLAYLIST = (function(){
+  var list = [];
+  for(var i=0;i<REAL_ANIME_SONGS.length;i++) list.push({ title: REAL_ANIME_SONGS[i], query: REAL_ANIME_SONGS[i] });
+  var k = 0;
+  while(list.length < 100){
+    var base = REAL_ANIME_SONGS[k % REAL_ANIME_SONGS.length];
+    var extra = ANIME_EXTRA_QUERIES[k % ANIME_EXTRA_QUERIES.length];
+    list.push({ title: base + ' (' + extra + ' #' + (list.length + 1) + ')', query: base + ' ' + extra });
+    k++;
+  }
+  return list;
+})();
+
+var musicPlaying = false;
+var musicMode = 'anime';
+var currentAnimeTrackIdx = 0;
+var mp3Url = '';
+var mp3Name = '';
+var syncedCustomMusicDataUrl = '';
+var mp3Audio = document.getElementById('mp3Music');
+mp3Audio.loop = true;
+mp3Audio.volume = 0.8;
+var animeAudioUrlCache = {};
+
+function setPlayingUI(on){
+  musicPlaying = on;
+  var btn = document.getElementById('btnPlayMusic');
+  if(btn) btn.textContent = on ? '⏸️ PAUSE MUSIK' : '▶️ PLAY MUSIK';
+}
+function updateMusicLabel(extraStatus){
+  if(musicMode === 'custom' && mp3Name){
+    setLabelText('musicCurrentInfo', '🎵 Custom: ' + mp3Name + (extraStatus ? ' • '+extraStatus : ''));
+  } else {
+    var tr = ANIME_100_PLAYLIST[currentAnimeTrackIdx] || ANIME_100_PLAYLIST[0];
+    setLabelText('musicCurrentInfo', '🎵 #' + (currentAnimeTrackIdx + 1) + ' ' + tr.title + (extraStatus ? ' • '+extraStatus : ''));
+  }
+}
+function fetchRealAnimePreviewUrl(idx){
+  return new Promise(function(resolve){
+    if(animeAudioUrlCache[idx]){ resolve(animeAudioUrlCache[idx]); return; }
+    var tr = ANIME_100_PLAYLIST[idx] || ANIME_100_PLAYLIST[0];
+    var cbName = 'cbAnimeMusic_' + idx + '_' + Date.now();
+    var script = document.createElement('script');
+    var done = false;
+    var timer = setTimeout(function(){ if(done) return; done = true; cleanup(); resolve(''); }, 5500);
+    function cleanup(){
+      clearTimeout(timer);
+      try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function(data){
+      if(done) return; done = true; cleanup();
+      var url = '';
+      if(data && Array.isArray(data.results) && data.results.length > 0){
+        for(var i=0;i<data.results.length;i++){
+          if(data.results[i].previewUrl){ url = data.results[i].previewUrl; break; }
+        }
+      }
+      if(url) animeAudioUrlCache[idx] = url;
+      resolve(url);
+    };
+    script.src = 'https://itunes.apple.com/search?term=' + encodeURIComponent(tr.query) + '&media=music&limit=5&callback=' + cbName;
+    script.onerror = function(){ if(done) return; done = true; cleanup(); resolve(''); };
+    document.body.appendChild(script);
+  });
+}
+async function playAnimeTrackByIndex(idx, savePref, showNotice, skipSync){
+  var safe = ((idx % ANIME_100_PLAYLIST.length) + ANIME_100_PLAYLIST.length) % ANIME_100_PLAYLIST.length;
+  currentAnimeTrackIdx = safe;
+  musicMode = 'anime';
+  if(savePref){
+    try{ localStorage.setItem('moza_music_mode', 'anime'); localStorage.setItem('moza_music_anime_idx', String(safe)); }catch(e){}
+    if(!skipSync && userPass) await forceCloudSyncNow('Musik Anime');
+  }
+  updateMusicLabel('Memuat...');
+  var srch = document.getElementById('musicSearchInput');
+  renderAnimeMusicList(srch ? srch.value : '');
+  var url = await fetchRealAnimePreviewUrl(safe);
+  if(!url) url = await fetchRealAnimePreviewUrl(safe % REAL_ANIME_SONGS.length);
+  if(url){
+    mp3Audio.src = url; mp3Audio.load();
+    mp3Audio.play().then(function(){
+      setPlayingUI(true); updateMusicLabel('Playing');
+      if(showNotice) showToast('🎵 ' + ANIME_100_PLAYLIST[safe].title);
+    }).catch(function(){ setPlayingUI(false); updateMusicLabel('Siap (Tap Play)'); });
+  } else { setPlayingUI(false); updateMusicLabel('Cek koneksi / pilih lagu lain'); }
+}
+function startActiveMusic(forceUserGesture){
+  if(musicMode === 'custom' && (mp3Url || syncedCustomMusicDataUrl)){
+    mp3Audio.src = mp3Url || syncedCustomMusicDataUrl;
+    mp3Audio.play().then(function(){ setPlayingUI(true); updateMusicLabel('Playing'); }).catch(function(){ if(forceUserGesture) showToast('▶️ Sentuh layar buat mulai audio'); });
+  } else { playAnimeTrackByIndex(currentAnimeTrackIdx, false, false, true); }
+}
+function stopMp3(){ musicPlaying = false; try{ mp3Audio.pause(); }catch(e){} setPlayingUI(false); updateMusicLabel('Paused'); }
+function togglePlayMusic(){
+  if(musicPlaying){ stopMp3(); }
+  else {
+    if(musicMode === 'anime' && mp3Audio.src){
+      mp3Audio.play().then(function(){ setPlayingUI(true); updateMusicLabel('Playing'); }).catch(function(){ playAnimeTrackByIndex(currentAnimeTrackIdx, false, true, true); });
+    } else { startActiveMusic(true); }
+  }
+}
+function randomAnimeMusic(){ var r = Math.floor(Math.random() * ANIME_100_PLAYLIST.length); playAnimeTrackByIndex(r, true, true); }
+function renderAnimeMusicList(filterStr){
+  var box = document.getElementById('animeMusicList'); if(!box) return;
+  var q = String(filterStr||'').toLowerCase().trim();
+  var frag = document.createDocumentFragment();
+  for(var i=0;i<ANIME_100_PLAYLIST.length;i++){
+    var tr = ANIME_100_PLAYLIST[i];
+    if(q && (tr.title+' '+(i+1)).toLowerCase().indexOf(q)===-1) continue;
+    var div = document.createElement('div');
+    div.className = 'preset-item' + (musicMode === 'anime' && currentAnimeTrackIdx === i ? ' active' : '');
+    div.textContent = (i+1) + '. 🎶 ' + tr.title;
+    div.onclick = (function(idx){ return function(){ playAnimeTrackByIndex(idx, true, true); }; })(i);
+    frag.appendChild(div);
+  }
+  box.innerHTML = ''; box.appendChild(frag);
+}
+function toggleMusicPanel(){ var p=document.getElementById('musicPanel'); p.style.display=(p.style.display==='block'?'none':'block'); if(p.style.display==='block') renderAnimeMusicList(''); }
+async function setMusicVolume(v){
+  mp3Audio.volume = Math.max(0, Math.min(1, v / 100));
+  try{ localStorage.setItem('moza_music_vol', String(v)); }catch(e){}
+  if(userPass) await forceCloudSyncNow('Volume');
+}
+function openMusicDB(){ return new Promise(function(res,rej){ var req=indexedDB.open('TunnelingMozaMusic',1); req.onupgradeneeded=function(){ var db=req.result; if(!db.objectStoreNames.contains('music')) db.createObjectStore('music'); }; req.onsuccess=function(){ res(req.result); }; req.onerror=function(){ rej(req.error); }; }); }
+async function saveMp3ToDB(file, name){ var db=await openMusicDB(); return new Promise(function(res,rej){ var tx=db.transaction('music','readwrite'); tx.objectStore('music').put({file:file, name:name}, 'anime_1'); tx.oncomplete=function(){ res(true); }; tx.onerror=function(){ rej(tx.error); }; }); }
+async function getMp3FromDB(){ try{ var db=await openMusicDB(); return new Promise(function(res,rej){ var tx=db.transaction('music','readonly'); var req=tx.objectStore('music').get('anime_1'); req.onsuccess=function(){ res(req.result||null); }; req.onerror=function(){ rej(req.error); }; }); }catch(e){ return null; } }
+async function deleteMp3FromDB(){ try{ var db=await openMusicDB(); var tx=db.transaction('music','readwrite'); tx.objectStore('music').delete('anime_1'); }catch(e){} }
+async function saveMp3ToCache(file, name){
+  if(!('caches' in window)) throw new Error('no cache api');
+  var cache=await caches.open('TunnelingMozaMusic');
+  var headers=new Headers();
+  headers.append('X-Music-Name', encodeURIComponent(name));
+  headers.append('Content-Type', file.type||'audio/*');
+  await cache.put('/moza-music-anime_1', new Response(file, {headers:headers}));
+  try{ localStorage.setItem('moza_music_name', name); }catch(e){}
+}
+async function getMp3FromCache(){
+  try{
+    if(!('caches' in window)) return null;
+    var cache=await caches.open('TunnelingMozaMusic');
+    var res=await cache.match('/moza-music-anime_1');
+    if(!res) return null;
+    var blob=await res.blob();
+    var name=res.headers.get('X-Music-Name')||localStorage.getItem('moza_music_name')||'Audio Track';
+    try{ name=decodeURIComponent(name); }catch(e){}
+    return {file:blob, name:name};
+  }catch(e){ return null; }
+}
+async function deleteMp3FromCache(){ try{ if('caches' in window){ var c=await caches.open('TunnelingMozaMusic'); await c.delete('/moza-music-anime_1'); } }catch(e){} try{ localStorage.removeItem('moza_music_name'); }catch(e){} }
+
+async function initSavedMusic(){
+  try{
+    var savedVol = localStorage.getItem('moza_music_vol');
+    if(savedVol !== null){
+      var vr = document.getElementById('musicVolRange'); if(vr) vr.value = savedVol;
+      mp3Audio.volume = Math.max(0, Math.min(1, (parseInt(savedVol, 10) || 80) / 100));
+    }
+    var savedTrack = parseInt(localStorage.getItem('moza_music_anime_idx') || '0', 10) || 0;
+    currentAnimeTrackIdx = ((savedTrack % ANIME_100_PLAYLIST.length) + ANIME_100_PLAYLIST.length) % ANIME_100_PLAYLIST.length;
+    var prefMode = localStorage.getItem('moza_music_mode') || 'anime';
+    if(prefMode === 'custom'){
+      var saved = await getMp3FromCache(); if(!saved) saved = await getMp3FromDB();
+      if(saved && saved.file){
+        mp3Name = saved.name || 'Audio Track';
+        if(mp3Url && mp3Url.indexOf('blob:') === 0) URL.revokeObjectURL(mp3Url);
+        mp3Url = URL.createObjectURL(saved.file); mp3Audio.src = mp3Url; mp3Audio.load();
+        musicMode = 'custom'; updateMusicLabel(); startActiveMusic(false); return;
+      }
+      var syncMusicData = localStorage.getItem('moza_music_custom_data');
+      var syncMusicName = localStorage.getItem('moza_music_name') || 'Audio Track';
+      if(syncMusicData && syncMusicData.indexOf('data:') === 0){
+        syncedCustomMusicDataUrl = syncMusicData; mp3Name = syncMusicName;
+        mp3Audio.src = syncMusicData; mp3Audio.load();
+        musicMode = 'custom'; updateMusicLabel(); startActiveMusic(false); return;
+      }
+    }
+  }catch(e){}
+  musicMode = 'anime'; playAnimeTrackByIndex(currentAnimeTrackIdx, false, false, true);
+}
+
+document.addEventListener('pointerdown', function unlockAudioOnce(){
+  if(mp3Audio.src && mp3Audio.paused && musicMode === 'custom'){
+    mp3Audio.play().then(function(){ setPlayingUI(true); }).catch(function(){});
+  }
+}, {passive:true});
+
+async function onPickMp3(e){
+  var f=e.target.files[0]; if(!f) return;
+  showToast('⏳ Memproses '+f.name+'...');
+  var savedOk=false;
+  try{ await saveMp3ToCache(f, f.name); savedOk=true; }catch(err){}
+  if(!savedOk){ try{ await saveMp3ToDB(f, f.name); savedOk=true; }catch(err2){} }
+  try{
+    localStorage.setItem('moza_music_mode', 'custom'); localStorage.setItem('moza_music_name', f.name);
+    if(f.size <= 3.5 * 1024 * 1024){
+      var b64Audio = await fileToDataURL(f); syncedCustomMusicDataUrl = b64Audio;
+      try{ localStorage.setItem('moza_music_custom_data', b64Audio); }catch(errM){}
+    } else {
+      syncedCustomMusicDataUrl = '';
+      try{ localStorage.removeItem('moza_music_custom_data'); }catch(errR){}
+    }
+  }catch(e){}
+  mp3Name=f.name; musicMode='custom'; updateMusicLabel();
+  if(mp3Url && mp3Url.indexOf('blob:')===0) URL.revokeObjectURL(mp3Url);
+  mp3Url=URL.createObjectURL(f); mp3Audio.src=mp3Url; mp3Audio.load();
+  await forceCloudSyncNow('Musik');
+  mp3Audio.play().then(function(){ setPlayingUI(true); updateMusicLabel('Playing'); }).catch(function(){});
+  e.target.value='';
+}
+async function hapusMp3(){
+  if(!confirm('Kembali ke 100 musik anime?')) return;
+  await deleteMp3FromCache(); await deleteMp3FromDB();
+  try{ mp3Audio.pause(); }catch(e){}
+  mp3Audio.src=''; mp3Url=''; mp3Name=''; syncedCustomMusicDataUrl='';
+  try{ localStorage.setItem('moza_music_mode', 'anime'); localStorage.removeItem('moza_music_custom_data'); }catch(e){}
+  musicMode='anime'; playAnimeTrackByIndex(currentAnimeTrackIdx, true, true);
+}
+
+var canStore=true;
+try{ localStorage.setItem('__test','1'); localStorage.removeItem('__test'); }catch(e){ canStore=false; }
+var data=[]; var payloads=[]; var bugs=[]; var apps=[];
+try{
+  if(canStore){
+    data=JSON.parse(localStorage.getItem('ssh_gw_v3')||'[]');
+    payloads=JSON.parse(localStorage.getItem('ssh_payloads_v1')||'[]');
+    bugs=JSON.parse(localStorage.getItem('ssh_bugs_v1')||'[]');
+    apps=JSON.parse(localStorage.getItem('ssh_apps_v1')||'[]');
+  }
+}catch(e){ data=[]; payloads=[]; bugs=[]; apps=[]; }
+function save(){
+  try{
+    if(canStore){
+      localStorage.setItem('ssh_gw_v3',JSON.stringify(data));
+      localStorage.setItem('ssh_payloads_v1',JSON.stringify(payloads));
+      localStorage.setItem('ssh_bugs_v1',JSON.stringify(bugs));
+      localStorage.setItem('ssh_apps_v1',JSON.stringify(apps));
+    }
+  }catch(e){}
+}
+
+var cat='ALL'; var isSaving=false; var lastAuto='';
+function xorCrypt(text, key){ var out=''; for(var i=0;i<text.length;i++){ out+=String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length)); } return out; }
+function encryptData(obj){ try{ var json=JSON.stringify(obj); var x=xorCrypt(json, userPass+'-SSH-VAULT-SECRET-'+APP_PASS); return btoa(unescape(encodeURIComponent(x))); }catch(e){ return JSON.stringify(obj); } }
+function decryptData(enc){ try{ var x=decodeURIComponent(escape(atob(enc))); var json=xorCrypt(x, userPass+'-SSH-VAULT-SECRET-'+APP_PASS); return JSON.parse(json); }catch(e){ return null; } }
+var NPOINT_ID='7cbad8095be23295a9de';
+var CLOUD_BASE='https://api.npoint.io/'+NPOINT_ID;
+
+async function buildFullSyncPayload(){
+  var mascotImg = ''; var mascotName = 'AI';
+  try{ mascotImg = localStorage.getItem('moza_senku_data') || ''; mascotName = localStorage.getItem('moza_senku_name') || 'AI'; }catch(e){}
+  var themeId = document.body.getAttribute('data-theme') || 'anime_1';
+  var bgMode = 'anime'; var bgIdx = currentAnimeBgIdx; var bgCustomData = ''; var bgCustomName = ''; var bgDark = '14';
+  try{
+    bgMode = localStorage.getItem('moza_bg_mode') || 'anime';
+    bgIdx = parseInt(localStorage.getItem('moza_bg_anime_idx') || String(currentAnimeBgIdx), 10) || 0;
+    bgCustomData = (bgMode === 'custom') ? (localStorage.getItem('moza_bg_data') || '') : '';
+    bgCustomName = localStorage.getItem('moza_bg_name') || '';
+    bgDark = localStorage.getItem('moza_bg_dark') || '14';
+  }catch(e){}
+  var mMode = musicMode || 'anime'; var mTrackIdx = currentAnimeTrackIdx || 0; var mVol = '80'; var mCustomData = ''; var mCustomName = '';
+  try{
+    mMode = localStorage.getItem('moza_music_mode') || mMode;
+    mTrackIdx = parseInt(localStorage.getItem('moza_music_anime_idx') || String(mTrackIdx), 10) || 0;
+    mVol = localStorage.getItem('moza_music_vol') || String(Math.round((mp3Audio.volume || 0.8) * 100));
+    mCustomData = syncedCustomMusicDataUrl || localStorage.getItem('moza_music_custom_data') || '';
+    mCustomName = mp3Name || localStorage.getItem('moza_music_name') || '';
+  }catch(e){}
+  var syncedApps = [];
+  for(var i=0;i<apps.length;i++){
+    var apItem = Object.assign({}, apps[i]);
+    if(apItem.hasFile && !apItem.syncBlobData && (!apItem.fileSize || apItem.fileSize <= 3.5*1024*1024)){
+      try{ var blob = await getAppFileFromDB(apItem.id); if(blob) apItem.syncBlobData = await fileToDataURL(blob); }catch(errB){}
+    }
+    syncedApps.push(apItem);
+  }
+  return {
+    syncedAt: new Date().toISOString(), a: data, p: payloads, b: bugs, ap: syncedApps,
+    prefs: {
+      theme: themeId, mascotImg: mascotImg, mascotName: mascotName,
+      bgMode: bgMode, bgIdx: bgIdx, bgCustomData: bgCustomData, bgCustomName: bgCustomName, bgDark: bgDark,
+      musicMode: mMode, musicTrackIdx: mTrackIdx, musicVol: mVol, musicCustomData: mCustomData, musicCustomName: mCustomName
+    }
+  };
+}
+
+function applySyncedPreferences(prefs, fromLoad){
+  if(!prefs || typeof prefs !== 'object') return false;
+  var changed = false;
+  if(prefs.theme){
+    var curTheme = document.body.getAttribute('data-theme') || 'anime_1';
+    var idx = applyThemeVisualOnly(prefs.theme);
+    try{ localStorage.setItem('moza_theme', ANIME_THEMES[idx].id); }catch(e){}
+    if(curTheme !== prefs.theme) changed = true;
+  }
+  if(prefs.mascotImg && prefs.mascotImg.indexOf('data:image') === 0){
+    try{ localStorage.setItem('moza_senku_data', prefs.mascotImg); localStorage.setItem('moza_senku_name', prefs.mascotName || 'AI'); }catch(e){}
+    senkuShow(prefs.mascotImg, prefs.mascotName || 'AI'); changed = true;
+  } else if(prefs.mascotImg === ''){
+    try{ localStorage.removeItem('moza_senku_data'); localStorage.removeItem('moza_senku_name'); }catch(e){}
+    syncBothSenkuImages('');
+  }
+  if(prefs.bgDark !== undefined){
+    try{ localStorage.setItem('moza_bg_dark', String(prefs.bgDark)); }catch(e){}
+    document.getElementById('bgOverlay').style.background='rgba(5,8,17,'+(prefs.bgDark/100)+')';
+    var r=document.getElementById('bgDarkRange'); if(r) r.value=prefs.bgDark;
+  }
+  if(prefs.bgMode === 'custom' && prefs.bgCustomData && prefs.bgCustomData.indexOf('data:image') === 0){
+    try{ localStorage.setItem('moza_bg_mode', 'custom'); localStorage.setItem('moza_bg_data', prefs.bgCustomData); localStorage.setItem('moza_bg_name', prefs.bgCustomName || 'Uploaded BG'); }catch(e){}
+    customBgActive = true; document.getElementById('bgLayer').style.backgroundImage="url('"+prefs.bgCustomData+"')";
+    setLabelText('bgCurrentInfo', 'Custom: '+(prefs.bgCustomName || 'Uploaded BG')); changed = true;
+  } else if(typeof prefs.bgIdx === 'number'){
+    var targetBg = ((prefs.bgIdx % ANIME_THEMES.length) + ANIME_THEMES.length) % ANIME_THEMES.length;
+    if(currentAnimeBgIdx !== targetBg || customBgActive){ applyCoolAnimeBgByThemeIndex(targetBg, true, true); changed = true; }
+  }
+  if(prefs.musicVol !== undefined){
+    var volNum = parseInt(prefs.musicVol, 10);
+    if(!isNaN(volNum)){
+      mp3Audio.volume = Math.max(0, Math.min(1, volNum / 100));
+      var vr = document.getElementById('musicVolRange'); if(vr) vr.value = volNum;
+      try{ localStorage.setItem('moza_music_vol', String(volNum)); }catch(e){}
+    }
+  }
+  if(prefs.musicMode === 'custom' && prefs.musicCustomData && prefs.musicCustomData.indexOf('data:') === 0){
+    syncedCustomMusicDataUrl = prefs.musicCustomData; mp3Name = prefs.musicCustomName || 'Audio Track'; musicMode = 'custom';
+    try{ localStorage.setItem('moza_music_mode', 'custom'); localStorage.setItem('moza_music_custom_data', prefs.musicCustomData); localStorage.setItem('moza_music_name', mp3Name); }catch(e){}
+    updateMusicLabel();
+    if(fromLoad && userPass){ mp3Audio.src = prefs.musicCustomData; mp3Audio.play().then(function(){ setPlayingUI(true); updateMusicLabel('Playing'); }).catch(function(){}); }
+    changed = true;
+  } else if(typeof prefs.musicTrackIdx === 'number'){
+    var targetTrack = ((prefs.musicTrackIdx % ANIME_100_PLAYLIST.length) + ANIME_100_PLAYLIST.length) % ANIME_100_PLAYLIST.length;
+    var trackChanged = (currentAnimeTrackIdx !== targetTrack) || (musicMode === 'custom');
+    currentAnimeTrackIdx = targetTrack; musicMode = 'anime';
+    try{ localStorage.setItem('moza_music_mode', 'anime'); localStorage.setItem('moza_music_anime_idx', String(targetTrack)); }catch(e){}
+    updateMusicLabel();
+    if(trackChanged && fromLoad && userPass){ playAnimeTrackByIndex(targetTrack, false, false, true); changed = true; }
+  }
+  if(changed){
+    var srchT = document.getElementById('themeSearchInput'); renderAnimeThemeList(srchT ? srchT.value : '');
+    var srchB = document.getElementById('bgSearchInput'); renderAnimeBgList(srchB ? srchB.value : '');
+    var srchM = document.getElementById('musicSearchInput'); renderAnimeMusicList(srchM ? srchM.value : '');
+  }
+  return changed;
+}
+
+async function cloudSave(){
+  if(!userPass) return false;
+  try{
+    var fullObj = await buildFullSyncPayload(); var encStr = encryptData(fullObj); var bodyPayload = JSON.stringify({d:encStr});
+    var res = await fetch(CLOUD_BASE,{ method:'POST', body:bodyPayload, headers:{'Content-Type':'application/json'} });
+    if(!res.ok) res = await fetch(CLOUD_BASE,{ method:'PUT', body:bodyPayload, headers:{'Content-Type':'application/json'} });
+    return res.ok;
+  }catch(e){ return false; }
+}
+
+async function restoreSyncedAppBlobs(apList){
+  if(!Array.isArray(apList)) return;
+  for(var i=0;i<apList.length;i++){
+    var item = apList[i];
+    if(item && item.id && item.syncBlobData && typeof item.syncBlobData === 'string' && item.syncBlobData.indexOf('data:') === 0){
+      try{ var resp = await fetch(item.syncBlobData); var blob = await resp.blob(); await saveAppFileToDB(item.id, blob); }catch(e){}
+    }
+  }
+}
+
+async function cloudLoad(force){
+  if(!userPass) return false;
+  try{
+    var res=await fetch(CLOUD_BASE+'?_ts='+Date.now(),{cache:'no-store'});
+    if(!res.ok) return false;
+    var j=await res.json(); var txt=j && j.d ? j.d : '';
+    if(!txt || txt==='test' || txt==='null' || txt==='') return false;
+    var obj=decryptData(txt); if(!obj) return false;
+    var arr = Array.isArray(obj) ? obj : (obj.a || []);
+    var pay = Array.isArray(obj) ? [] : (obj.p || []);
+    var bg = Array.isArray(obj) ? [] : (obj.b || []);
+    var ap = Array.isArray(obj) ? [] : (obj.ap || []);
+    arr=arr.filter(function(a){ return !isExpired(a); });
+    var dataChanged = false;
+    if(force || arr.length > data.length || pay.length > payloads.length || bg.length > bugs.length || ap.length > apps.length){
+      if(arr.length >= data.length) data=arr;
+      if(pay.length >= payloads.length) payloads=pay;
+      if(bg.length >= bugs.length) bugs=bg;
+      if(ap.length >= apps.length){ apps=ap; await restoreSyncedAppBlobs(ap); }
+      save(); dataChanged = true;
+    }
+    var prefChanged = false;
+    if(!Array.isArray(obj) && obj.prefs) prefChanged = applySyncedPreferences(obj.prefs, !!force);
+    if(dataChanged || prefChanged){ render(); renderPayload(); renderBug(); renderAplikasi(); refreshConfigSelects(); }
+    return true;
+  }catch(e){ return false; }
+}
+
+async function forceCloudSyncNow(tagLabel){
+  if(!userPass) userPass = APP_PASS;
+  save();
+  var label = tagLabel ? (' (' + tagLabel + ')') : '';
+  showToast('⏳ Auto-sync ke cloud' + label + '...');
+
+  var ok = await cloudSave();
+  var trimmedMedia = false;
+
+  if(!ok){
+    var fullObj = await buildFullSyncPayload();
+    fullObj.prefs.bgCustomData = '';
+    fullObj.prefs.musicCustomData = '';
+    fullObj.ap = fullObj.ap.map(function(x){
+      var c = Object.assign({}, x);
+      delete c.syncBlobData;
+      return c;
+    });
+    trimmedMedia = true;
+    try{
+      var encSlim = encryptData(fullObj);
+      var res2 = await fetch(CLOUD_BASE, {
+        method: 'POST',
+        body: JSON.stringify({ d: encSlim }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      ok = res2.ok;
+    }catch(e){
+      ok = false;
+    }
+  }
+
+  if(ok){
+    var hasMascot = false;
+    var hasCustomMusic = false;
+    var mModeCur = 'anime';
+    try{
+      hasMascot = !!(localStorage.getItem('moza_senku_data'));
+      mModeCur = localStorage.getItem('moza_music_mode') || 'anime';
+      hasCustomMusic = (mModeCur === 'custom' && !!localStorage.getItem('moza_music_custom_data'));
+    }catch(e){}
+
+    var noteExtra = [];
+    if(hasMascot) noteExtra.push('Maskot ✅');
+    if(mModeCur === 'anime'){
+      noteExtra.push('Musik Anime #' + (currentAnimeTrackIdx + 1) + ' ✅');
+    } else if(hasCustomMusic){
+      noteExtra.push('Musik Custom ✅');
+    } else {
+      noteExtra.push('Musik Custom (>3.5MB = Lokal HP)');
+    }
+    if(trimmedMedia) noteExtra.push('File besar pakai mode ringkas');
+
+    showToast('✅ Tersimpan & ke-sync' + label + (noteExtra.length ? ' • ' + noteExtra.join(' | ') : ''));
+  } else {
+    showToast('⚠️ Tersimpan di HP, tapi sync cloud gagal! Cek koneksi/kuota npoint.');
+  }
+  return ok;
+}
+
+async function manualSync(){
+  var ok = await forceCloudSyncNow('Manual');
+  if(ok) await cloudLoad(false);
+}
+setInterval(async function(){ if(userPass) await cloudLoad(false); },8000);
+
+function formatSize(bytes){ if(!bytes && bytes!==0) return ''; if(bytes<1024) return bytes+' B'; if(bytes<1024*1024) return (bytes/1024).toFixed(1)+' KB'; return (bytes/(1024*1024)).toFixed(2)+' MB'; }
+function openAppDB(){ return new Promise(function(res,rej){ var req=indexedDB.open('TunnelingMozaApps',1); req.onupgradeneeded=function(){ var db=req.result; if(!db.objectStoreNames.contains('files')) db.createObjectStore('files'); }; req.onsuccess=function(){ res(req.result); }; req.onerror=function(){ rej(req.error); }; }); }
+async function saveAppFileToDB(id, file){ var db=await openAppDB(); return new Promise(function(res,rej){ var tx=db.transaction('files','readwrite'); tx.objectStore('files').put(file, String(id)); tx.oncomplete=function(){ res(true); }; tx.onerror=function(){ rej(tx.error); }; }); }
+async function getAppFileFromDB(id){ var db=await openAppDB(); return new Promise(function(res,rej){ var tx=db.transaction('files','readonly'); var req=tx.objectStore('files').get(String(id)); req.onsuccess=function(){ res(req.result||null); }; req.onerror=function(){ rej(req.error); }; }); }
+async function deleteAppFileFromDB(id){ try{ var db=await openAppDB(); var tx=db.transaction('files','readwrite'); tx.objectStore('files').delete(String(id)); }catch(e){} }
+function onPickAppFile(){
+  var f=document.getElementById('aFile').files[0]; var info=document.getElementById('aFileInfo');
+  if(!f){ info.textContent='Belum ada file dipilih'; return; }
+  if(f.size>MAX_APP_SIZE){ info.textContent='❌ File kegedean! '+formatSize(f.size)+' > 120 MB'; showToast('❌ File kegedean! Maks 120 MB'); document.getElementById('aFile').value=''; return; }
+  info.textContent='📦 '+f.name+' • '+formatSize(f.size)+' / 120 MB ✅';
+  if(!document.getElementById('aNama').value.trim()){
+    var nm=f.name.replace(/\.[a-z0-9]+$/i,'').replace(/[_-]+/g,' '); document.getElementById('aNama').value=nm;
+  }
+}
+async function simpanAplikasi(){
+  var nama=document.getElementById('aNama').value.trim(); var note=document.getElementById('aNote').value.trim(); var f=document.getElementById('aFile').files[0];
+  if(!nama){ showToast('❌ Nama Aplikasi wajib diisi!'); return; }
+  if(!f){ showToast('❌ Pilih File dulu!'); return; }
+  if(f.size>MAX_APP_SIZE){ showToast('❌ File kegedean! Maks 120 MB'); return; }
+  var item={nama:nama,note:note,fileName:f.name,fileSize:f.size,tgl:new Date().toLocaleDateString('id-ID'),id:Date.now(),hasFile:true};
+  showToast('⏳ Nyimpen file '+formatSize(f.size)+'...');
+  try{ await saveAppFileToDB(item.id, f); }catch(e){ showToast('❌ Gagal nyimpen file!'); return; }
+  apps.unshift(item); renderAplikasi();
+  document.getElementById('aNama').value=''; document.getElementById('aNote').value=''; document.getElementById('aFile').value=''; document.getElementById('aFileInfo').textContent='Belum ada file dipilih';
+  await forceCloudSyncNow('Aplikasi: '+nama);
+}
+async function downloadAplikasi(i){
+  var a=apps[i];
+  try{
+    var blob=await getAppFileFromDB(a.id);
+    if(blob){
+      var url=URL.createObjectURL(blob); var linkEl=document.createElement('a'); linkEl.href=url; linkEl.download=a.fileName|| (a.nama+'.apk'); document.body.appendChild(linkEl); linkEl.click(); document.body.removeChild(linkEl); setTimeout(function(){ URL.revokeObjectURL(url); },2000); showToast('⬇️ Export Aplikasi: '+a.nama); return;
+    }
+    showToast('⚠️ File cuma ada di HP yang upload.');
+  }catch(e){ showToast('❌ Gagal download file!'); }
+}
+function exportAplikasi(i){ downloadAplikasi(i); }
+async function hapusAplikasi(i){ if(confirm('Hapus aplikasi ini?')){ var a=apps[i]; try{ localStorage.removeItem('appfile_'+a.id); }catch(e){} await deleteAppFileFromDB(a.id); apps.splice(i,1); renderAplikasi(); await forceCloudSyncNow('Hapus App'); } }
+function renderAplikasi(){
+  var el=document.getElementById('cApp'); if(el) el.textContent=apps.length;
+  var q=(document.getElementById('cariApp').value||'').toLowerCase();
+  var list=document.getElementById('listApp'); if(!list) return;
+  var frag=document.createDocumentFragment();
+  apps.forEach(function(a,i){
+    if(q && (a.nama+' '+a.note+' '+a.fileName).toLowerCase().indexOf(q)===-1) return;
+    var div=document.createElement('div'); div.className='hud-item-card';
+    var fileHtml=a.fileName? '<div class="exp">📦 '+a.fileName+' • '+formatSize(a.fileSize)+'</div>' : '';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><b>'+a.nama+'</b><span class="badge APP">APP</span></div><div class="exp">'+(a.note||'')+' • '+a.tgl+'</div>'+fileHtml+'<div class="row" style="margin-top:8px"><button type="button" class="btn btn-green" onclick="downloadAplikasi('+i+')">⬇️ DOWNLOAD</button><button type="button" class="btn btn-white" onclick="exportAplikasi('+i+')">⬆️ EXPORT</button><button type="button" class="btn btn-red" onclick="hapusAplikasi('+i+')">HAPUS</button></div>';
+    frag.appendChild(div);
+  });
+  list.innerHTML=''; list.appendChild(frag);
+}
+
+function refreshConfigSelects(){
+  var selA=document.getElementById('cfgAkun'); if(selA){ var cur=selA.value; selA.innerHTML='<option value="">Pilih SSH</option>'; data.forEach(function(a,i){ var o=document.createElement('option'); o.value=i; o.textContent=(i+1)+'. '+a.nama+' | '+a.user; selA.appendChild(o); }); selA.value=cur; }
+  var selB=document.getElementById('cfgBug'); if(selB){ var curB=selB.value; selB.innerHTML='<option value="">Pilih Bug</option>'; bugs.forEach(function(b,i){ var o=document.createElement('option'); o.value=i; o.textContent=b.nama+' - '+b.bug+' ('+b.op+')'; selB.appendChild(o); }); selB.value=curB; }
+  var selP=document.getElementById('cfgPayload'); if(selP){ var curP=selP.value; selP.innerHTML='<option value="">Pilih Payload</option>'; payloads.forEach(function(p,i){ var o=document.createElement('option'); o.value=i; o.textContent=p.nama+' ('+p.op+')'; selP.appendChild(o); }); selP.value=curP; }
+}
+function onCfgNamaInput(){
+  var raw = document.getElementById('cfgNama').value.trim();
+  if(raw){
+    var res = resolveBugAndPayloadByQuery(raw);
+    if(res.bug){ var bi = bugs.indexOf(res.bug); if(bi > -1) document.getElementById('cfgBug').value = String(bi); }
+    if(res.payloadObj){ var pi = payloads.indexOf(res.payloadObj); if(pi > -1) document.getElementById('cfgPayload').value = String(pi); }
+  }
+  previewConfig();
+}
+function onCfgBugChange(){
+  var bi=document.getElementById('cfgBug').value;
+  if(bi!==''){
+    var b=bugs[+bi];
+    if(!document.getElementById('cfgNama').value.trim()){
+      var nm=b.nama.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+      document.getElementById('cfgNama').value=nm||b.nama;
+    }
+    var pMatch = findPayloadByName(b.nama);
+    if(pMatch){ var pi = payloads.indexOf(pMatch); if(pi > -1) document.getElementById('cfgPayload').value = String(pi); }
+  }
+  previewConfig();
+}
+
+function composeConfigObject(opts){
+  var namaRaw=(opts && opts.namaRaw ? String(opts.namaRaw).trim() : '') || (document.getElementById('cfgNama') ? document.getElementById('cfgNama').value.trim() : '') || 'ai-config';
+  var nama=namaRaw.toUpperCase();
+  var a = opts && opts.akun ? opts.akun : (data[+(document.getElementById('cfgAkun') && document.getElementById('cfgAkun').value !== '' ? document.getElementById('cfgAkun').value : -1)] || data[0] || null);
+  var b = opts && opts.bug ? opts.bug : (bugs[+(document.getElementById('cfgBug') && document.getElementById('cfgBug').value !== '' ? document.getElementById('cfgBug').value : -1)] || bugs[0] || null);
+  var port = String((opts && opts.port) || (document.getElementById('cfgPort') ? document.getElementById('cfgPort').value : '443') || '443');
+  if(!a) return {error:'Akun SSH belum tersedia atau belum dipilih!'};
+  if(!b) return {error:'Bug belum tersedia atau belum dipilih!'};
+
+  var bugHost=b.bug;
+  var sniHost=a.host;
+  var chosenPayloadObj = (opts && opts.payloadObj) ? opts.payloadObj : null;
+  var payload='';
+  var payloadLabel='Default';
+
+  if(chosenPayloadObj && chosenPayloadObj.payload){
+    payload=chosenPayloadObj.payload;
+    payloadLabel=chosenPayloadObj.nama;
+  } else if(opts && opts.payload){
+    payload=opts.payload;
+    payloadLabel='Custom';
+  } else {
+    var pi=document.getElementById('cfgPayload') ? document.getElementById('cfgPayload').value : '';
+    if(pi!=='' && payloads[+pi]){
+      payload=payloads[+pi].payload;
+      payloadLabel=payloads[+pi].nama;
+    } else {
+      var matchedByName = findPayloadByName(b.nama) || findPayloadByName(namaRaw);
+      if(matchedByName){
+        payload=matchedByName.payload;
+        payloadLabel=matchedByName.nama;
+      } else {
+        payload='GET / HTTP/1.1[crlf]Host: '+bugHost+'[crlf]Connection: Keep-Alive[crlf]User-Agent: [ua][crlf]Upgrade: websocket[crlf][crlf]';
+        payloadLabel='Auto ('+bugHost+')';
+      }
+    }
+  }
+
+  var ssh443 = a.host+':443@'+a.user+':'+a.pass;
+  var ssh80  = a.host+':80@'+a.user+':'+a.pass;
+  var bug443 = bugHost+':443';
+  var bug80  = bugHost+':80';
+  var namaFile = namaRaw.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'config';
+  return {
+    nama:nama, namaFile:namaFile, akun:a, bug:b, bugHost:bugHost, bug443:bug443, bug80:bug80,
+    ssh443:ssh443, ssh80:ssh80, sniHost:sniHost, port:port, payload:payload, payloadLabel:payloadLabel,
+    sshLine:a.host+':'+port+'@'+a.user+':'+a.pass
+  };
+}
+
+function getConfigData(){
+  var ai=document.getElementById('cfgAkun').value; var bi=document.getElementById('cfgBug').value;
+  if(ai==='') return {error:'Pilih Akun SSH dulu!'};
+  if(bi==='') return {error:'Pilih Bug dulu!'};
+  var pi=document.getElementById('cfgPayload').value;
+  return composeConfigObject({
+    namaRaw:document.getElementById('cfgNama').value.trim() || 'config',
+    akun:data[+ai], bug:bugs[+bi], port:document.getElementById('cfgPort').value || '443',
+    payloadObj:(pi!=='' && payloads[+pi]) ? payloads[+pi] : null
+  });
+}
+
+function b64EncodeUnicode(str){ return btoa(unescape(encodeURIComponent(str))); }
+function buildDark(d){
+  var obj={
+    type:'SSH', name:d.nama,
+    sshTunnelConfig:{
+      sshConfig:{ host:d.akun.host, port:parseInt(d.port,10)||443, username:d.akun.user, password:d.akun.pass },
+      injectConfig:{
+        mode:'PROXY_SNI', serverNameIndication:d.sniHost, proxyHost:d.bugHost, proxyPort:parseInt(d.port,10)||443,
+        bugPort443:d.bug443, bugPort80:d.bug80, ssh443:d.ssh443, ssh80:d.ssh80,
+        payloadName:d.payloadLabel, payload:d.payload
+      }
+    }
+  };
+  return 'darktunnel://'+b64EncodeUnicode(JSON.stringify(obj));
+}
+
+function triggerDownloadString(content, fname){
+  var blob=new Blob([content],{type:'application/octet-stream'}); var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=fname; a.setAttribute('download',fname);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); },2000);
+}
+
+function previewConfig(){
+  var d=getConfigData(); var box=document.getElementById('cfgPreview');
+  if(!box) return;
+  if(d.error){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  box.textContent='Nama: '+d.nama+'\nSSH: '+d.akun.host+' ('+d.akun.user+')\nBug: '+d.bugHost+' (443 & 80)\nPayload: '+d.payloadLabel+'\nSSH 443: '+d.ssh443+'\nSSH 80 : '+d.ssh80+'\nPayload:\n'+d.payload;
+}
+
+function downloadConfig(){
+  var d=getConfigData(); if(d.error){ showToast('❌ '+d.error); return; }
+  var content = buildDark(d); var fname = d.namaFile+'.dark';
+  triggerDownloadString(content, fname); showToast('✅ Download: '+fname);
+}
+
+function salinConfig(){
+  var d=getConfigData(); if(d.error){ showToast('❌ '+d.error); return; }
+  var link = buildDark(d); copyText(link, null, 'Config Dark');
+}
+
+function cleanBug(v){ return String(v||'').trim().replace(/^https?:\/\//i,'').replace(/\/.*$/,'').replace(/:\d+$/,'').trim(); }
+async function simpanBug(){
+  var nama=document.getElementById('bNama').value.trim(); var bug=cleanBug(document.getElementById('bBug').value);
+  var op=document.getElementById('bOp').value; var note=document.getElementById('bNote').value.trim();
+  if(!nama || !bug){ showToast('❌ Nama & Bug wajib diisi!'); return; }
+  bugs.unshift({nama:nama,op:op,bug:bug,note:note,tgl:new Date().toLocaleDateString('id-ID')});
+  renderBug(); refreshConfigSelects();
+  document.getElementById('bNama').value=''; document.getElementById('bBug').value=''; document.getElementById('bNote').value='';
+  await forceCloudSyncNow('Bug: '+nama);
+}
+function salinBug(i,btn){ var b=bugs[i]; copyText(b.bug,btn,'Bug'); }
+function salinBugPort(i,port,btn){ var b=bugs[i]; var teks=b.bug+':'+port; copyText(teks,btn,'Bug '+port); }
+function salinBugKeduanya(i,btn){ var b=bugs[i]; var teks=b.bug+':443\n'+b.bug+':80'; copyText(teks,btn,'Bug 443 & 80'); }
+async function hapusBug(i){ if(confirm('Hapus bug ini?')){ bugs.splice(i,1); renderBug(); refreshConfigSelects(); await forceCloudSyncNow('Hapus Bug'); } }
+function renderBug(){
+  var el=document.getElementById('cBug'); if(el) el.textContent=bugs.length;
+  var q=(document.getElementById('cariBug').value||'').toLowerCase();
+  var list=document.getElementById('listBug'); if(!list) return;
+  var frag=document.createDocumentFragment();
+  bugs.forEach(function(b,i){
+    if(q && (b.nama+' '+b.bug+' '+b.op).toLowerCase().indexOf(q)===-1) return;
+    var bug443=b.bug+':443'; var bug80=b.bug+':80';
+    var div=document.createElement('div'); div.className='hud-item-card';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><b>'+b.nama+'</b><span class="badge '+b.op+'">'+b.op+'</span></div><div class="exp">'+(b.note||'')+' • '+b.tgl+'</div><div class="code"><b>Bug:</b> '+b.bug+'<br><br><b>443:</b><br>'+bug443+'<br><br><b>80:</b><br>'+bug80+'</div><div class="row"><button type="button" class="btn btn-purple" onclick="salinBugPort('+i+',443,this)">📋 443</button><button type="button" class="btn btn-green" onclick="salinBugPort('+i+',80,this)">📋 80</button><button type="button" class="btn btn-white" onclick="salinBugKeduanya('+i+',this)">📋 KEDUANYA</button></div><div class="row" style="margin-top:6px"><button type="button" class="btn btn-orange" onclick="salinBug('+i+',this)">🐛 BUG</button><button type="button" class="btn btn-red" onclick="hapusBug('+i+')">HAPUS</button></div>';
+    frag.appendChild(div);
+  });
+  list.innerHTML='';
+  if(!frag.childNodes.length) list.innerHTML='<div style="text-align:center;color:#94A3B8;padding:20px;font-size:13px">Belum ada bug.</div>';
+  else list.appendChild(frag);
+}
+
+async function simpanPayload(){
+  var nama=document.getElementById('pNama').value.trim(); var pay=document.getElementById('pPayload').value.trim();
+  var op=document.getElementById('pOp').value; var note=document.getElementById('pNote').value.trim();
+  if(!nama || !pay){ showToast('❌ Nama & Payload wajib diisi!'); return; }
+  payloads.unshift({nama:nama,op:op,payload:pay,note:note,tgl:new Date().toLocaleDateString('id-ID')});
+  renderPayload(); refreshConfigSelects();
+  document.getElementById('pNama').value=''; document.getElementById('pPayload').value=''; document.getElementById('pNote').value='';
+  await forceCloudSyncNow('Payload: '+nama);
+}
+function salinPayload(i,btn){ var p=payloads[i]; copyText(p.payload,btn,'Payload'); }
+async function hapusPayload(i){ if(confirm('Hapus payload ini?')){ payloads.splice(i,1); renderPayload(); refreshConfigSelects(); await forceCloudSyncNow('Hapus Payload'); } }
+function renderPayload(){
+  var el=document.getElementById('cPay'); if(el) el.textContent=payloads.length;
+  var q=(document.getElementById('cariPay').value||'').toLowerCase();
+  var list=document.getElementById('listPay'); if(!list) return;
+  var frag=document.createDocumentFragment();
+  payloads.forEach(function(p,i){
+    if(q && (p.nama+' '+p.op+' '+p.payload).toLowerCase().indexOf(q)===-1) return;
+    var div=document.createElement('div'); div.className='hud-item-card';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px"><b>'+p.nama+'</b><span class="badge '+p.op+'">'+p.op+'</span></div><div class="exp">'+(p.note||'')+' • '+p.tgl+'</div><div class="code">'+p.payload.replace(/</g,'&lt;')+'</div><div class="row"><button type="button" class="btn btn-cyan" onclick="salinPayload('+i+',this)">📋 SALIN PAYLOAD</button><button type="button" class="btn btn-red" onclick="hapusPayload('+i+')">HAPUS</button></div>';
+    frag.appendChild(div);
+  });
+  list.innerHTML='';
+  if(!frag.childNodes.length) list.innerHTML='<div style="text-align:center;color:#94A3B8;padding:20px;font-size:13px">Belum ada payload.</div>';
+  else list.appendChild(frag);
+}
+
+function detectCountry(host, rawTxt){
+  var h=String(host||'').toLowerCase(); var raw=String(rawTxt||'').toLowerCase();
+  if(raw.indexOf('indonesia')>-1 || raw.indexOf('jakarta')>-1 || raw.indexOf('surabaya')>-1 || raw.indexOf('bandung')>-1 || raw.indexOf('medan')>-1 || raw.indexOf('semarang')>-1 || raw.indexOf('jogja')>-1 || raw.indexOf('yogyakarta')>-1 || raw.indexOf('makassar')>-1 || raw.indexOf('palembang')>-1) return 'ID';
+  if(raw.indexOf('singapore')>-1 || raw.indexOf('singapura')>-1) return 'SG';
+  var tokens=h.split(/[^a-z0-9]+/).filter(Boolean);
+  for(var i=0;i<tokens.length;i++){ var t=tokens[i]; if(t==='id' || t==='idn' || t==='indonesia' || /^id\d+$/.test(t)) return 'ID'; }
+  if(h.indexOf('ssh-id')>-1 || h.indexOf('-id-')>-1 || h.indexOf('-id.')>-1 || h.indexOf('.id')>-1 || h.indexOf('id1.')>-1 || h.indexOf('id2.')>-1 || h.indexOf('id3.')>-1) return 'ID';
+  for(var j=0;j<tokens.length;j++){ var s=tokens[j]; if(s==='sg' || s==='sgp' || s==='singapore' || /^sg\d+$/.test(s)) return 'SG'; }
+  if(h.indexOf('ssh-sg')>-1 || h.indexOf('-sg-')>-1 || h.indexOf('-sg.')>-1 || h.indexOf('.sg')>-1) return 'SG';
+  return 'SG';
+}
+(function fixOldData(){ var changed=false; for(var i=0;i<data.length;i++){ if(data[i].kat==='VIP') continue; var benar=detectCountry(data[i].host||'', ''); if(data[i].kat!==benar){ data[i].kat=benar; changed=true; } } if(changed) save(); })();
+
+function parseTanggal(str){
+  if(!str) return null; var s=String(str).trim(); var low=s.toLowerCase();
+  var bln={januari:0,jan:0,january:0,februari:1,feb:1,february:1,maret:2,mar:2,march:2,april:3,apr:3,mei:4,may:4,juni:5,jun:5,june:5,juli:6,jul:6,july:6,agustus:7,aug:7,august:7,september:8,sep:8,oktober:9,oct:9,october:9,november:10,nov:10,desember:11,dec:11,december:11};
+  var timeM=low.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/); var HH=23, MM=59, SS=59; if(timeM){ HH=+timeM[1]; MM=+timeM[2]; SS=timeM[3]?+timeM[3]:0; }
+  var m1=low.match(/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{4})/); if(m1) return new Date(+m1[3],+m1[2]-1,+m1[1],HH,MM,SS);
+  var m2=low.match(/(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})/); if(m2) return new Date(+m2[1],+m2[2]-1,+m2[3],HH,MM,SS);
+  var m3=low.match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/); if(m3 && bln[m3[2]]!==undefined) return new Date(+m3[3],bln[m3[2]],+m3[1],HH,MM,SS);
+  var m4=low.match(/([a-z]+)\s+(\d{1,2}),?\s+(\d{4})/); if(m4 && bln[m4[1]]!==undefined) return new Date(+m4[3],bln[m4[1]],+m4[2],HH,MM,SS);
+  var d=new Date(s); if(!isNaN(d)) return d; return null;
+}
+function formatExp(a){ var d=parseTanggal(a.exp||''); if(!d) return (a.exp||'-'); var blnArr=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; return pad(d.getDate())+'-'+blnArr[d.getMonth()]+'-'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); }
+function isExpired(a){ var d=parseTanggal(a.exp||''); if(!d) return false; return new Date() > d; }
+function sisaDetail(a){
+  var d=parseTanggal(a.exp||''); if(!d) return null; var diff=d - new Date(); if(diff<=0) return {expired:true, text:'💀 EXPIRED'};
+  var totalDetik=Math.floor(diff/1000); var hari=Math.floor(totalDetik/86400); var jam=Math.floor((totalDetik%86400)/3600); var menit=Math.floor((totalDetik%3600)/60); var detik=totalDetik%60;
+  if(hari>0) return {expired:false, text:'✅ '+hari+'h '+jam+'j '+menit+'m', hari:hari};
+  if(jam>0) return {expired:false, text:'⚠️ '+jam+'j '+menit+'m '+detik+'d', hari:0};
+  if(menit>0) return {expired:false, text:'⚠️ '+menit+'m '+detik+'d', hari:0};
+  return {expired:false, text:'⚠️ '+detik+'d', hari:0};
+}
+function autoClean(){ var before=data.length; data=data.filter(function(a){ return !isExpired(a); }); var hapus=before-data.length; if(hapus>0){ save(); } return hapus; }
+function extractExp(txt){
+  var labels=['kedaluwarsa','kadaluwarsa','expired','expiry','expires','expiration','expire','exp date','exp','valid until','valid','until','masa aktif','masa berlaku','berlaku sampai','berlaku','aktif sampai','sampai','tanggal habis','habis','end date','end','deadline'];
+  for(var i=0;i<labels.length;i++){ var lab=labels[i]; var re=new RegExp(lab+'\\s*[:=\\-]?\\s*\\n?\\s*([^\\n\\r]+)','i'); var m=txt.match(re); if(m){ var v=m[1].trim(); if(parseTanggal(v)) return v; } }
+  var pats=[/(\d{4}[\-\/]\d{1,2}[\-\/]\d{1,2}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?)/g,/(\d{1,2}[\-\/]\d{1,2}[\-\/]\d{4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?)/g,/(\d{1,2}\s+(?:januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec|january|february|march|may|june|july|august|october)\s+\d{4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?)/gi];
+  for(var p=0;p<pats.length;p++){ var mm=txt.match(pats[p]); if(mm && mm.length>0) return mm[mm.length-1]; } return '';
+}
+
+function setCat(c){
+  cat=c; var btns=document.querySelectorAll('.menu button'); for(var i=0;i<btns.length;i++) btns[i].classList.remove('active');
+  if(c==='ALL') document.getElementById('btnALL').classList.add('active');
+  else {
+    for(var j=0;j<btns.length;j++){
+      if((btns[j].getAttribute('onclick')||'').indexOf("'"+c+"'")>-1) btns[j].classList.add('active');
+    }
+  }
+  document.getElementById('page-list').classList.toggle('hidden',c==='TAMBAH'||c==='PAYLOAD'||c==='BUG'||c==='APLIKASI'||c==='CONFIG');
+  document.getElementById('page-tambah').classList.toggle('hidden',c!=='TAMBAH');
+  document.getElementById('page-payload').classList.toggle('hidden',c!=='PAYLOAD');
+  document.getElementById('page-bug').classList.toggle('hidden',c!=='BUG');
+  document.getElementById('page-aplikasi').classList.toggle('hidden',c!=='APLIKASI');
+  document.getElementById('page-config').classList.toggle('hidden',c!=='CONFIG');
+  if(c==='PAYLOAD'){ renderPayload(); }
+  if(c==='BUG'){ renderBug(); }
+  if(c==='APLIKASI'){ renderAplikasi(); }
+  if(c==='CONFIG'){ refreshConfigSelects(); previewConfig(); }
+  if(c==='TAMBAH'){ var sb=document.getElementById('statusBox'); if(sb){ sb.className='status'; sb.innerHTML='⏳ Menunggu input SSH...'; } var tp=document.getElementById('tempel'); if(tp) tp.value=''; var pb=document.getElementById('previewBox'); if(pb) pb.classList.add('hidden'); setTimeout(function(){ var t2=document.getElementById('tempel'); if(t2) t2.focus(); },70); }
+  render(true);
+}
+
+var toastTimer = null;
+function showToast(t){ var el=document.getElementById('toast'); if(!el) return; el.textContent=t; el.style.display='block'; if(toastTimer) clearTimeout(toastTimer); toastTimer=setTimeout(function(){el.style.display='none'},2800); }
+function showModalCopy(text){ document.getElementById('modalText').value=text; document.getElementById('modalCopy').style.display='flex'; }
+function closeModal(){ document.getElementById('modalCopy').style.display='none'; }
+function selectAllModal(){ var ta=document.getElementById('modalText'); ta.focus(); ta.select(); try{document.execCommand('copy'); showToast('✅ Tersalin!'); closeModal();}catch(e){ showToast('Pilih Semua -> Salin'); } }
+async function copyText(text,btn,label){
+  if(btn){ var old=btn.innerHTML; btn.innerHTML='⏳...'; btn.disabled=true; setTimeout(function(){btn.innerHTML=old; btn.disabled=false},1500); }
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); showToast('✅ '+label+' tersalin!'); if(btn) btn.innerHTML='✅ TERSALIN!'; return true; } throw new Error('x'); }catch(e){
+    try{ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select(); var ok=document.execCommand('copy'); document.body.removeChild(ta); if(ok){ showToast('✅ '+label+' tersalin!'); return true; } throw new Error('y'); }catch(e2){ showModalCopy(text); return false; }
+  }
+}
+
+function clean(v){ return String(v||'').trim().replace(/^["'`]+|["'`]+$/g,'').trim(); }
+function parseOnly(){
+  var ta=document.getElementById('tempel'); var raw=ta.value; if(!raw || raw.trim().length<5) return null;
+  var txt=raw.trim(); var host='',user='',pass='',port='22',exp='',sni='';
+  var m1=txt.match(/([A-Za-z0-9][A-Za-z0-9._\-~:\[\]]*?\.[A-Za-z]{2,}(?:\.[A-Za-z]{2,})?)\s*:\s*(\d{2,5})\s*@\s*([^:\s@\n\r]+)\s*:\s*([^\s\n\r|;]+)/);
+  if(m1 && txt.indexOf('@')>-1 && txt.indexOf(':')>-1){ host=clean(m1[1]); user=clean(m1[3]); pass=clean(m1[4]); }
+  else if(txt.indexOf('|')>-1 && txt.split('|').length>=3){ var pp=txt.split(/[\|\n]/).map(clean).filter(Boolean); if(pp.length>=3){ host=pp[0]; user=pp[1]; pass=pp[2]; } }
+  else{
+    var lines=txt.split('\n').map(function(s){return s.trim()}).filter(Boolean);
+    var labels={host:['host','hostname','tuan rumah','tuan','rumah','server','alamat'],user:['username','user','nama pengguna','nama belakang','nama depan','nama','pengguna','login'],pass:['password','pass','passwd','pwd','kata sandi','kata kunci','sandi','pin'],exp:['kedaluwarsa','kadaluwarsa','expired','expiry','expires','expiration','expire','exp','valid until','valid','until','masa aktif','masa berlaku','berlaku sampai','berlaku','aktif sampai','sampai','tanggal habis','habis','end date','end','deadline'],port:['port']};
+    function findType(line){ var n=line.toLowerCase().replace(/[:=]/g,'').replace(/\s+/g,' ').trim(); for(var k in labels){ if(labels[k].indexOf(n)>-1) return k; } for(var k2 in labels){ for(var j=0;j<labels[k2].length;j++){ if(n.indexOf(labels[k2][j])===0) return k2; } } return null; }
+    function isLabel(line){ return findType(line)!==null; }
+    for(var i=0;i<lines.length;i++){ var line=lines[i]; var next=lines[i+1]||''; var type=findType(line); if(!type) continue; var low=line.toLowerCase(); var val=''; for(var li=0;li<labels[type].length;li++){ var lab=labels[type][li]; var idx=low.indexOf(lab); if(idx>-1){ val=clean(line.slice(idx+lab.length).replace(/^[\s:=\-]+/,'').trim()); break; } } if(!val && isLabel(line) && next && !isLabel(next)){ val=clean(next); i++; } if(!val) continue; if(type==='host') host=val; else if(type==='user') user=val; else if(type==='pass') pass=val; else if(type==='exp') exp=val; else if(type==='port' && /^\d{2,5}$/.test(val)) port=val; }
+  }
+  if(!host){ var mm=txt.match(/([A-Za-z0-9][A-Za-z0-9._-]*\.[A-Za-z]{2,}(?:\.[A-Za-z]{2,})?)/); if(mm) host=clean(mm[0]); }
+  if(!user || !pass){ var vals=txt.split('\n').map(function(s){return s.trim()}).filter(function(v){return v && v!==host && v!==exp && v!==port}); if(!user && vals[0]) user=clean(vals[0]); if(!pass && vals[1]) pass=clean(vals[1]); }
+  if(!exp) exp=extractExp(txt); if(!host || !user || !pass) return null;
+  var kat=detectCountry(host, txt); return {kat:kat,nama:host,host:host,user:user,pass:pass,port:port||'22',exp:exp,extra:sni};
+}
+function cobaParse(){
+  var p=parseOnly(); var sb=document.getElementById('statusBox'); var box=document.getElementById('previewBox');
+  if(!p){ if(sb){ sb.className='status err'; sb.innerHTML='❌ Gak ke-baca!'; } showToast('❌ Gak ke-baca!'); return; }
+  document.getElementById('host').value=p.host; document.getElementById('user').value=p.user; document.getElementById('pass').value=p.pass; document.getElementById('port').value=p.port; document.getElementById('exp').value=p.exp; document.getElementById('extra').value=p.extra; document.getElementById('nama').value=p.host; document.getElementById('kat').value=p.kat;
+  var s=sisaDetail({exp:p.exp}); var sisaTxt=s? s.text : '-'; box.classList.remove('hidden');
+  box.textContent='Host: '+p.host+'\nUser: '+p.user+'\nPass: '+p.pass+'\n'+p.kat+'\nExp: '+formatExp(p)+' • '+sisaTxt+'\n\n443: '+p.host+':443@'+p.user+':'+p.pass+'\n80: '+p.host+':80@'+p.user+':'+p.pass;
+  if(sb){ sb.className='status ok'; sb.innerHTML='✅ Ke-baca! '+p.kat; }
+}
+async function simpanManual(){
+  var p=parseOnly();
+  if(!p){ var hv=document.getElementById('host').value.trim(); var uv=document.getElementById('user').value.trim(); var pv=document.getElementById('pass').value.trim(); if(!hv || !uv || !pv){ showToast('❌ Host / User / Pass kosong!'); return; } p={kat:document.getElementById('kat').value,nama:hv,host:hv,user:uv,pass:pv,port:document.getElementById('port').value||'22',exp:document.getElementById('exp').value,extra:document.getElementById('extra').value}; }
+  if(isExpired(p)){ showToast('💀 Udah expired!'); return; }
+  data.unshift(p); refreshConfigSelects();
+  document.getElementById('tempel').value=''; ['nama','host','user','pass','port','exp','extra'].forEach(function(x){document.getElementById(x).value=''}); document.getElementById('previewBox').classList.add('hidden'); lastAuto='';
+  await forceCloudSyncNow('SSH: '+p.host);
+  setTimeout(function(){ setCat('ALL'); },280);
+}
+function doAuto(){
+  if(isSaving) return; var ta=document.getElementById('tempel'); if(!ta) return; var raw=ta.value; if(!raw || raw.trim().length<10) return; if(raw===lastAuto) return; var p=parseOnly(); if(!p) return; var sb=document.getElementById('statusBox');
+  if(sb){ sb.className='status work'; sb.innerHTML='⚡ Convert... '+p.host; }
+  if(isExpired(p)){ if(sb){ sb.className='status err'; sb.innerHTML='💀 EXPIRED'; } showToast('💀 Udah expired!'); setTimeout(function(){ta.value='';},1200); return; }
+  isSaving=true; lastAuto=raw; document.getElementById('host').value=p.host; document.getElementById('user').value=p.user; document.getElementById('pass').value=p.pass; document.getElementById('port').value=p.port; document.getElementById('exp').value=p.exp; document.getElementById('nama').value=p.host; document.getElementById('kat').value=p.kat;
+  setTimeout(async function(){
+    data.unshift(p); refreshConfigSelects();
+    if(sb){ sb.className='status ok'; sb.innerHTML='✅ Tersimpan!'; }
+    await forceCloudSyncNow('Auto SSH: '+p.host);
+    setTimeout(function(){ ta.value=''; document.getElementById('previewBox').classList.add('hidden'); isSaving=false; setCat('ALL'); },300);
+  },200);
+}
+
+function salinFormat(i,port,btn){ var a=data[i]; var teks=a.host+':'+port+'@'+a.user+':'+a.pass; copyText(teks,btn,'Format '+port); }
+function salinKeduanya(i,btn){ var a=data[i]; var teks=a.host+':443@'+a.user+':'+a.pass+'\n'+a.host+':80@'+a.user+':'+a.pass; copyText(teks,btn,'Keduanya'); }
+async function hapus(i){ if(confirm('Hapus akun ini?')){ data.splice(i,1); render(true); refreshConfigSelects(); await forceCloudSyncNow('Hapus SSH'); } }
+function exportData(){ var b=new Blob([JSON.stringify({accounts:data,payloads:payloads,bugs:bugs,apps:apps})],{type:'application/json'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='backup-tunneling-moza.json'; a.click(); }
+function importData(e){ var r=new FileReader(); r.onload=async function(){ try{ var j=JSON.parse(r.result); if(Array.isArray(j)){ data=j; } else { data=j.accounts||[]; payloads=j.payloads||payloads; bugs=j.bugs||bugs; apps=j.apps||apps; } render(true); renderPayload(); renderBug(); renderAplikasi(); refreshConfigSelects(); await forceCloudSyncNow('Import JSON'); }catch(err){ alert('File salah'); } }; r.readAsText(e.target.files[0]); }
+
+function render(forceRebuild){
+  if(!forceRebuild && isScrollingFast){
+    pendingRenderAfterScroll = true;
+    return;
+  }
+  document.getElementById('tTotal').textContent=data.length;
+  document.getElementById('tVip').textContent=data.filter(function(x){return x.kat==='VIP'}).length;
+  document.getElementById('tExp').textContent=data.filter(function(x){ return x.exp && parseTanggal(x.exp); }).length;
+  document.getElementById('cAll').textContent=data.length;
+  var q=(document.getElementById('cari').value||'').toLowerCase();
+  var list=document.getElementById('list');
+  var frag=document.createDocumentFragment();
+  data.forEach(function(a,i){
+    if(cat!=='ALL' && cat!=='TAMBAH' && cat!=='PAYLOAD' && cat!=='BUG' && cat!=='APLIKASI' && cat!=='CONFIG' && a.kat!==cat) return;
+    if(q && (a.nama+' '+a.host+' '+a.user).toLowerCase().indexOf(q)===-1) return;
+    var f443=a.host+':443@'+a.user+':'+a.pass; var f80=a.host+':80@'+a.user+':'+a.pass; var s=sisaDetail(a); var sisaTxt=s? s.text : '';
+    var div=document.createElement('div'); div.className='hud-item-card';
+    div.innerHTML='<div class="acct" style="display:flex;justify-content:space-between;gap:8px"><b>#'+(i+1)+' '+a.nama+'</b><span class="badge '+a.kat+'">'+a.kat+'</span></div><div class="exp">Exp: '+formatExp(a)+(sisaTxt?' • '+sisaTxt:'')+'</div><div class="code"><b>Host:</b> '+a.host+'<br><b>User:</b> '+a.user+'<br><b>Pass:</b> '+a.pass+'<br><br><b>443:</b><br>'+f443+'<br><br><b>80:</b><br>'+f80+'</div><div class="row"><button type="button" class="btn btn-purple" onclick="salinFormat('+i+',443,this)">📋 443</button><button type="button" class="btn btn-green" onclick="salinFormat('+i+',80,this)">📋 80</button><button type="button" class="btn btn-white" onclick="salinKeduanya('+i+',this)">📋 KEDUANYA</button></div><div class="row" style="margin-top:6px"><button type="button" class="btn btn-red" style="flex:1" onclick="hapus('+i+')">HAPUS</button></div>';
+    frag.appendChild(div);
+  });
+  list.innerHTML='';
+  if(!frag.childNodes.length) list.innerHTML='<div style="text-align:center;color:#94A3B8;padding:20px;font-size:13px">Belum ada akun SSH.</div>';
+  else list.appendChild(frag);
+}
+
+var senkuDialog = {
+  step: 'IDLE',
+  draft: { nama: '', bug: null, payloadObj: null, akun: null, port: '443' }
+};
+var senkuGeneratedConfigs = [];
+var activeListMode = '';
+var awaitingConfigConfirm = false;
+
+function sanitizeAssistantText(rawText){
+  return String(rawText || '')
+    .replace(/\bvinland\s*saga\b/gi, '')
+    .replace(/\bdr\.?\s*stone\b/gi, '')
+    .replace(/\/\//g, ' ')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function setSenkuStateLabel(txt){
+  var el=document.getElementById('senkuAiStateText');
+  if(el) el.textContent=sanitizeAssistantText(txt);
+}
+
+function setAiTyping(isTyping){
+  var bar=document.getElementById('aiTypingBar');
+  if(!bar) return;
+  if(isTyping){
+    bar.classList.add('show');
+    var log=document.getElementById('senkuChatLog');
+    if(log) log.scrollTop=log.scrollHeight;
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function buildInteractiveListButtons(mode){
+  var wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:6px;margin-top:8px;';
+
+  if(mode === 'BUG'){
+    if(!bugs.length){
+      var emB=document.createElement('div');
+      emB.style.cssText='font-size:11px;color:#FCA5A5;';
+      emB.textContent='Belum ada bug tersimpan di tab Bug.';
+      wrap.appendChild(emB);
+      return wrap;
+    }
+    bugs.forEach(function(b, i){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.style.cssText='width:100%;text-align:left;padding:9px 11px;border-radius:9px;cursor:pointer;text-transform:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:linear-gradient(135deg, rgba(10,20,38,0.88), rgba(6,13,26,0.96));border:1px solid rgba(56,189,248,0.35);border-left:3.5px solid var(--acc);color:#F8FAFC;';
+      btn.innerHTML =
+        '<span style="min-width:0;flex:1;">' +
+          '<span style="display:block;font-size:11.5px;font-weight:900;color:#F8FAFC;">' + (i+1) + '. 🐛 ' + b.nama + '</span>' +
+          '<span style="display:block;font-size:10px;color:#94A3B8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + b.bug + '</span>' +
+        '</span>' +
+        '<span style="font-size:9.5px;font-weight:900;padding:3px 7px;border-radius:5px;background:rgba(34,197,94,0.14);border:1px solid var(--acc);color:var(--acc);flex-shrink:0;">' + (b.op||'ALL') + '</span>';
+      btn.onclick=(function(idxNum){
+        return function(){ handleSenkuCommand(String(idxNum+1)); };
+      })(i);
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  if(mode === 'PAYLOAD'){
+    if(!payloads.length){
+      var emP=document.createElement('div');
+      emP.style.cssText='font-size:11px;color:#FCA5A5;';
+      emP.textContent='Belum ada payload tersimpan di tab Payload.';
+      wrap.appendChild(emP);
+      return wrap;
+    }
+    payloads.forEach(function(p, i){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.style.cssText='width:100%;text-align:left;padding:9px 11px;border-radius:9px;cursor:pointer;text-transform:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:linear-gradient(135deg, rgba(10,20,38,0.88), rgba(6,13,26,0.96));border:1px solid rgba(56,189,248,0.35);border-left:3.5px solid var(--acc2);color:#F8FAFC;';
+      btn.innerHTML =
+        '<span style="min-width:0;flex:1;">' +
+          '<span style="display:block;font-size:11.5px;font-weight:900;color:#F8FAFC;">' + (i+1) + '. 📦 ' + p.nama + '</span>' +
+          '<span style="display:block;font-size:10px;color:#94A3B8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Klik atau ketik ' + (i+1) + ' untuk pakai</span>' +
+        '</span>' +
+        '<span style="font-size:9.5px;font-weight:900;padding:3px 7px;border-radius:5px;background:rgba(6,182,212,0.14);border:1px solid var(--acc2);color:var(--acc2);flex-shrink:0;">' + (p.op||'ALL') + '</span>';
+      btn.onclick=(function(idxNum){
+        return function(){ handleSenkuCommand(String(idxNum+1)); };
+      })(i);
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  if(mode === 'SSH'){
+    if(!data.length){
+      var emS=document.createElement('div');
+      emS.style.cssText='font-size:11px;color:#FCA5A5;';
+      emS.textContent='Belum ada akun SSH tersimpan di daftar SSH.';
+      wrap.appendChild(emS);
+      return wrap;
+    }
+    data.forEach(function(akun, i){
+      var katCode = String(akun.kat || detectCountry(akun.host || '', akun.nama || '') || 'SG').toUpperCase();
+      var flagEmoji = '🌐';
+      var countryLabel = katCode;
+      var accentCol = 'var(--acc2)';
+
+      if(katCode === 'ID' || katCode === 'INDONESIA'){
+        flagEmoji = '🇮🇩'; countryLabel = 'INDONESIA'; accentCol = '#38BDF8';
+      } else if(katCode === 'SG' || katCode === 'SINGAPORE'){
+        flagEmoji = '🇸🇬'; countryLabel = 'SINGAPORE'; accentCol = '#38BDF8';
+      } else if(katCode === 'VIP'){
+        var detKat = detectCountry(akun.host || '', akun.nama || '');
+        flagEmoji = detKat === 'ID' ? '🇮🇩' : (detKat === 'SG' ? '🇸🇬' : '⭐');
+        countryLabel = detKat === 'ID' ? 'ID • VIP' : (detKat === 'SG' ? 'SG • VIP' : 'VIP');
+        accentCol = '#FBBF24';
+      }
+
+      var expInfo = sisaDetail(akun);
+      var expTag = (expInfo && !expInfo.expired) ? (' • ' + expInfo.text.replace(/^[✅⚠️]\s*/, '')) : '';
+
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.style.cssText=[
+        'width:100%', 'text-align:left', 'padding:9px 11px', 'border-radius:9px',
+        'cursor:pointer', 'text-transform:none', 'display:flex', 'justify-content:space-between',
+        'align-items:center', 'gap:8px',
+        'background:linear-gradient(135deg, rgba(10,20,38,0.85), rgba(6,13,26,0.95))',
+        'border:1px solid rgba(56,189,248,0.35)', 'border-left:3.5px solid ' + accentCol, 'color:#F8FAFC'
+      ].join(';');
+
+      btn.innerHTML =
+        '<span style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">' +
+          '<span style="font-size:17px;line-height:1;flex-shrink:0;">' + flagEmoji + '</span>' +
+          '<span style="min-width:0;flex:1;">' +
+            '<span style="display:block;font-size:11.5px;font-weight:900;color:#F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (i+1) + '. ' + (akun.nama || akun.host) + '</span>' +
+            '<span style="display:block;font-size:10px;color:#94A3B8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👤 ' + akun.user + expTag + '</span>' +
+          '</span>' +
+        '</span>' +
+        '<span style="font-size:9.5px;font-weight:900;letter-spacing:.4px;padding:3px 7px;border-radius:5px;background:rgba(255,255,255,0.08);border:1px solid ' + accentCol + ';color:' + accentCol + ';flex-shrink:0;">' +
+          flagEmoji + ' ' + countryLabel +
+        '</span>';
+
+      btn.onclick=(function(idxNum){
+        return function(){ handleSenkuCommand(String(idxNum+1)); };
+      })(i);
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  return wrap;
+}
+
+function appendSenkuMsg(role, text, cfgObj, cfgIdx, extraOpts){
+  var log=document.getElementById('senkuChatLog');
+  if(!log) return;
+  var div=document.createElement('div');
+  div.className='chat-msg '+(role==='user'?'chat-user':'chat-ai');
+
+  var head=document.createElement('span');
+  var nowTime = new Date();
+  var jamBalas = pad(nowTime.getHours()) + ':' + pad(nowTime.getMinutes()) + ':' + pad(nowTime.getSeconds());
+  if(role==='user'){
+    head.className='chat-user-head';
+    head.textContent='✦ Kamu • ' + jamBalas;
+  } else {
+    head.className='chat-ai-head';
+    head.innerHTML='<span>✦ AI ASSISTANT</span><span style="font-size:9.5px;opacity:.95;font-family:var(--theme-font-mono),monospace">🕒 ' + jamBalas + '</span>';
+  }
+  div.appendChild(head);
+
+  var bodySpan=document.createElement('span');
+  if(role==='ai') bodySpan.className='chat-ai-body';
+  bodySpan.textContent=(role==='ai' ? sanitizeAssistantText(text) : text);
+  div.appendChild(bodySpan);
+
+  if(role==='ai' && extraOpts && extraOpts.listMode){
+    div.appendChild(buildInteractiveListButtons(extraOpts.listMode));
+  }
+
+  if(role==='ai' && extraOpts && extraOpts.portPicker){
+    var portRow=document.createElement('div');
+    portRow.className='row';
+    portRow.style.marginTop='8px';
+    ['443','80'].forEach(function(pNum){
+      var pBtn=document.createElement('button');
+      pBtn.type='button';
+      pBtn.className=(pNum==='443'?'btn btn-purple':'btn btn-green');
+      pBtn.style.padding='8px 10px';
+      pBtn.textContent=(pNum==='443'?'🔒 PORT 443 (SSL/TLS)':'🌐 PORT 80 (HTTP)');
+      pBtn.onclick=(function(pv){
+        return function(){
+          handleSenkuCommand(pv);
+        };
+      })(pNum);
+      portRow.appendChild(pBtn);
+    });
+    div.appendChild(portRow);
+  }
+
+  if(role==='ai' && cfgObj){
+    var card=document.createElement('div');
+    card.className='chat-cfg-card';
+    card.textContent=
+      '📦 Config: '+cfgObj.nama+'.dark'+
+      '\n🔑 SSH: '+cfgObj.akun.host+' ('+cfgObj.akun.user+')'+
+      '\n🐛 Bug: '+cfgObj.bug.nama+' → '+cfgObj.bugHost+' ['+(cfgObj.bug.op||'ALL')+']'+
+      '\n📜 Payload: '+cfgObj.payloadLabel+
+      '\n⚡ SSH 443: '+cfgObj.ssh443+
+      '\n⚡ SSH 80 : '+cfgObj.ssh80+
+      '\n🌐 Bug 443: '+cfgObj.bug443+
+      '\n🌐 Bug 80 : '+cfgObj.bug80;
+    div.appendChild(card);
+
+    var btnRow=document.createElement('div');
+    btnRow.className='row';
+    btnRow.style.marginTop='8px';
+
+    var dlBtn=document.createElement('button');
+    dlBtn.type='button';
+    dlBtn.className='btn btn-green';
+    dlBtn.style.padding='8px';
+    dlBtn.textContent='⬇️ .DARK';
+    dlBtn.onclick=(function(idx){ return function(){ senkuDownloadByIdx(idx); }; })(cfgIdx);
+
+    var cpBtn=document.createElement('button');
+    cpBtn.type='button';
+    cpBtn.className='btn btn-cyan';
+    cpBtn.style.padding='8px';
+    cpBtn.textContent='📋 SALIN';
+    cpBtn.onclick=(function(idx){ return function(){ senkuCopyByIdx(idx); }; })(cfgIdx);
+
+    var bothBtn=document.createElement('button');
+    bothBtn.type='button';
+    bothBtn.className='btn btn-purple';
+    bothBtn.style.padding='8px';
+    bothBtn.textContent='⚡ 443 & 80';
+    bothBtn.onclick=(function(idx){ return function(){ senkuCopyPortsByIdx(idx); }; })(cfgIdx);
+
+    btnRow.appendChild(dlBtn);
+    btnRow.appendChild(cpBtn);
+    btnRow.appendChild(bothBtn);
+    div.appendChild(btnRow);
+  }
+
+  log.appendChild(div);
+  log.scrollTop=log.scrollHeight;
+}
+
+function aiReplyWithTyping(opts){
+  var text = sanitizeAssistantText(opts.text || '');
+  var doneVoiceKey = opts.doneVoiceKey || opts.configVoiceKey || (opts.cfgObj ? 'config_ready' : '');
+  var cfgObj = opts.cfgObj || null;
+  var cfgIdx = (opts.cfgIdx !== undefined) ? opts.cfgIdx : -1;
+  var delay = opts.delay || 850;
+  var extraOpts = {
+    listMode: opts.listMode || '',
+    portPicker: !!opts.portPicker
+  };
+
+  setAiTyping(true);
+
+  setTimeout(function(){
+    setAiTyping(false);
+    appendSenkuMsg('ai', text, cfgObj, cfgIdx, extraOpts);
+    senkuChatHistory.push({ role: 'ai', text: text });
+    if(senkuChatHistory.length > 16) senkuChatHistory.shift();
+    playAiChatNotifChime();
+    if(doneVoiceKey){
+      setTimeout(function(){ playAnimeVoiceLine(doneVoiceKey); }, 380);
+    }
+  }, delay);
+}
+
+function senkuDownloadByIdx(idx){
+  var item=senkuGeneratedConfigs[idx]; if(!item) return;
+  triggerDownloadString(item.darkLink, item.data.namaFile+'.dark');
+  showToast('✅ Download '+item.data.namaFile+'.dark');
+}
+function senkuCopyByIdx(idx){
+  var item=senkuGeneratedConfigs[idx]; if(!item) return;
+  copyText(item.darkLink, null, 'Config '+item.data.nama);
+}
+function senkuCopyPortsByIdx(idx){
+  var item=senkuGeneratedConfigs[idx]; if(!item) return;
+  var txt='SSH 443: '+item.data.ssh443+'\nSSH 80: '+item.data.ssh80+'\nBug 443: '+item.data.bug443+'\nBug 80: '+item.data.bug80;
+  copyText(txt, null, 'SSH & Bug 443/80');
+}
+
+function normWord(s){
+  return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim();
+}
+function collapseDup(s){
+  return String(s||'').replace(/(.)\1+/g,'$1');
+}
+function typoNormalizeText(s){
+  var t = String(s||'').toLowerCase().trim();
+  t = t.replace(/[^a-z0-9\s.-]/g, ' ');
+  t = t
+    .replace(/\b(bkn|bkin|bikin|biking|biken|buatin|bikinin|buwat|buwatkan|buatkn|buatn|buat|genrate|generat|rakti|rkit)\b/g, 'bikin')
+    .replace(/\b(conffig|confg|konfig|konfigurasi|konfiguasi|cfg|cnfig|cofnig|comfig)\b/g, 'config')
+    .replace(/\b(pyload|paylaod|paylod|paylaud|payloard|paload|paylaodnya|payloadnya)\b/g, 'payload')
+    .replace(/\b(bgu|buug|bg|bugnya)\b/g, 'bug')
+    .replace(/\b(shh|sssh|sxh|sshnya)\b/g, 'ssh')
+    .replace(/\b(halo+|hallo+|helo+|hllo+|hai+|hay+|hi+|hei+|yo+|oi+|syg+|sayng+|syang+|sayangg+|cinta+|cnta+|bby+|baby+|babby+|sayangku+|syangku+|sygku+)\b/g, function(m){
+      var w = collapseDup(m);
+      if(/^h[aei]lo$/.test(w)) return 'hallo';
+      if(/^h[ai]$/.test(w)) return 'hi';
+      if(/^s[ay]+g$/.test(w) || /^s[ay]+ang$/.test(w)) return 'sayang';
+      if(/^c[iu]+nta$/.test(w) || /^cnta$/.test(w)) return 'cinta';
+      if(/^b[aei]+b?y$/.test(w)) return 'baby';
+      if(/sayangku|syangku|sygku/.test(w)) return 'sayangku';
+      return w;
+    });
+  return t.replace(/\s+/g, ' ').trim();
+}
+
+function levDist(a, b){
+  a=String(a||''); b=String(b||'');
+  var m=a.length, n=b.length;
+  if(!m) return n; if(!n) return m;
+  var dp=[];
+  for(var i=0;i<=m;i++) dp[i]=[i];
+  for(var j=0;j<=n;j++) dp[0][j]=j;
+  for(var i2=1;i2<=m;i2++){
+    for(var j2=1;j2<=n;j2++){
+      var c = a.charAt(i2-1)===b.charAt(j2-1) ? 0 : 1;
+      dp[i2][j2] = Math.min(dp[i2-1][j2]+1, dp[i2][j2-1]+1, dp[i2-1][j2-1]+c);
+    }
+  }
+  return dp[m][n];
+}
+
+function wordMatchScore(qRaw, cRaw){
+  var q=normWord(qRaw);
+  var c=normWord(cRaw);
+  if(!q || !c) return 0;
+  if(q===c) return 1.0;
+
+  var qC=collapseDup(q);
+  var cC=collapseDup(c);
+  if(qC===cC) return 0.96;
+
+  if(c.indexOf(q)>-1 || q.indexOf(c)>-1){
+    var minL=Math.min(q.length, c.length);
+    var maxL=Math.max(q.length, c.length);
+    if(minL >= 2) return 0.85 + 0.12*(minL/maxL);
+  }
+  if(cC.indexOf(qC)>-1 || qC.indexOf(cC)>-1){
+    var minLC=Math.min(qC.length, cC.length);
+    if(minLC >= 2) return 0.83;
+  }
+
+  var dist=levDist(q, c);
+  var distC=levDist(qC, cC);
+  var effDist=Math.min(dist, distC);
+  var maxLen=Math.max(q.length, c.length, 1);
+  var maxAllowedDist = maxLen <= 4 ? 1 : (maxLen <= 7 ? 2 : Math.floor(maxLen*0.38));
+  if(effDist <= maxAllowedDist){
+    return Math.max(0.64, 1 - (effDist/maxLen));
+  }
+  return 0;
+}
+
+function extractSubjectPhrase(inputStr){
+  var raw=typoNormalizeText(inputStr);
+  var cleaned = raw
+    .replace(/\b(bikin|buat|generate|rakit|gas|tolong|dong|lah|nih|ya|yuk|ayo|please|plz|sayang|sayangku|cinta|baby|woy|oi|bro|kak|bang|config|payload|bug|ssh|port|443|80|pake|pakai|dengan|pakaiin|bikininn)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return cleaned || raw;
+}
+
+function findBestItemByName(list, queryStr, minScore){
+  if(!list || !list.length) return null;
+  var raw = String(queryStr||'').trim();
+  if(!raw) return null;
+  var normRaw = typoNormalizeText(raw);
+  var phrase = extractSubjectPhrase(raw);
+  var pNorm = normWord(phrase);
+  var rawNorm = normWord(normRaw);
+  var tokens = phrase.split(/\s+/).filter(function(t){ return t.length >= 2; });
+
+  var bestItem = null;
+  var bestScore = 0;
+
+  for(var i=0;i<list.length;i++){
+    var item = list[i];
+    var iNama = String(item.nama||'').trim();
+    var iNamaNorm = normWord(iNama);
+    if(!iNamaNorm) continue;
+
+    var score = Math.max(wordMatchScore(pNorm, iNamaNorm), wordMatchScore(rawNorm, iNamaNorm));
+    if(pNorm && pNorm.length >= 2 && (iNamaNorm.indexOf(pNorm) > -1 || pNorm.indexOf(iNamaNorm) > -1)){
+      score = Math.max(score, 0.91);
+    }
+    if(rawNorm && rawNorm.length >= 2 && (iNamaNorm.indexOf(rawNorm) > -1 || rawNorm.indexOf(iNamaNorm) > -1)){
+      score = Math.max(score, 0.89);
+    }
+
+    var iWords = iNama.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    for(var ti=0; ti<tokens.length; ti++){
+      var tok = tokens[ti];
+      var tn = normWord(tok);
+      if(tn.length >= 2 && iNamaNorm.indexOf(tn) > -1){
+        score = Math.max(score, 0.88);
+      }
+      score = Math.max(score, wordMatchScore(tok, iNamaNorm));
+      for(var wi=0; wi<iWords.length; wi++){
+        score = Math.max(score, wordMatchScore(tok, iWords[wi]));
+      }
+    }
+
+    if(score > bestScore){
+      bestScore = score;
+      bestItem = item;
+    }
+  }
+
+  return bestScore >= (minScore || 0.64) ? bestItem : null;
+}
+
+function findBugStrict(queryStr){
+  return findBestItemByName(bugs, queryStr, 0.64);
+}
+
+function findPayloadByName(queryStr){
+  return findBestItemByName(payloads, queryStr, 0.64);
+}
+
+function resolveBugAndPayloadByQuery(queryStr){
+  var raw = String(queryStr||'').trim();
+  var subj = extractSubjectPhrase(raw) || raw;
+
+  var foundBug = findBugStrict(subj) || findBugStrict(raw);
+  var foundPay = findPayloadByName(subj) || findPayloadByName(raw);
+
+  if(foundBug && !foundPay){
+    foundPay = findPayloadByName(foundBug.nama);
+  }
+  if(foundPay && !foundBug){
+    foundBug = findBugStrict(foundPay.nama) || (bugs.length ? bugs[0] : null);
+  }
+
+  return {
+    subject: subj,
+    bug: foundBug,
+    payloadObj: foundPay
+  };
+}
+
+function findSshByInput(inputStr){
+  var raw=String(inputStr||'').trim();
+  if(!raw || !data.length) return null;
+  if(/^\d+$/.test(raw)){
+    var idx=parseInt(raw,10)-1;
+    if(idx>=0 && idx<data.length) return data[idx];
+  }
+  var q=normWord(raw);
+  if(!q) return null;
+  for(var i=0;i<data.length;i++){
+    var a=data[i];
+    var sc=Math.max(wordMatchScore(q, a.nama||''), wordMatchScore(q, a.host||''), wordMatchScore(q, a.user||''));
+    if(sc>=0.65 || normWord(a.nama).indexOf(q)>-1 || normWord(a.host).indexOf(q)>-1 || normWord(a.user).indexOf(q)>-1) return a;
+  }
+  return null;
+}
+
+function finalizeSenkuConfig(namaRaw, akunObj, bugObj, portVal, payloadObj){
+  var safeAkun = akunObj || data[0] || null;
+  var safeBug = bugObj || bugs[0] || null;
+  if(!safeAkun){
+    senkuDialog.step='IDLE'; activeListMode=''; awaitingConfigConfirm=false;
+    aiReplyWithTyping({ text: '⚠️ Akun SSH belum tersedia. Silahkan tambah dulu di tab ➕ Tambah.', delay: 750 });
+    return;
+  }
+  if(!safeBug){
+    senkuDialog.step='IDLE'; activeListMode=''; awaitingConfigConfirm=false;
+    aiReplyWithTyping({ text: '⚠️ Bug belum tersedia. Silahkan tambah dulu di tab 🐛 Bug.', delay: 750 });
+    return;
+  }
+
+  var pStr = String(portVal || '443').trim();
+  var pVal = (pStr.indexOf('80') > -1 && pStr.indexOf('443') === -1) ? '80' : '443';
+  var chosenPay = payloadObj || findPayloadByName(namaRaw) || findPayloadByName(safeBug.nama);
+
+  var cfgData=composeConfigObject({
+    namaRaw: namaRaw || safeBug.nama || 'config',
+    akun: safeAkun,
+    bug: safeBug,
+    port: pVal,
+    payloadObj: chosenPay
+  });
+  if(cfgData.error){
+    senkuDialog.step='IDLE'; activeListMode=''; awaitingConfigConfirm=false;
+    aiReplyWithTyping({ text: '❌ '+cfgData.error, delay: 750 });
+    return;
+  }
+
+  var darkLink=buildDark(cfgData);
+  senkuGeneratedConfigs.push({ data: cfgData, darkLink: darkLink });
+  var idx=senkuGeneratedConfigs.length-1;
+
+  try{
+    var elNama=document.getElementById('cfgNama'); if(elNama) elNama.value=cfgData.namaFile;
+    var elPort=document.getElementById('cfgPort'); if(elPort) elPort.value=cfgData.port;
+    var aIdx=data.indexOf(safeAkun);
+    var bIdx=bugs.indexOf(safeBug);
+    var pIdx=chosenPay ? payloads.indexOf(chosenPay) : -1;
+    var elAkun=document.getElementById('cfgAkun'); if(elAkun && aIdx>-1) elAkun.value=String(aIdx);
+    var elBug=document.getElementById('cfgBug'); if(elBug && bIdx>-1) elBug.value=String(bIdx);
+    var elPay=document.getElementById('cfgPayload'); if(elPay && pIdx>-1) elPay.value=String(pIdx);
+    previewConfig();
+  }catch(e){}
+
+  lastSenkuConfigIdx = idx;
+  senkuDialog.step='IDLE';
+  senkuDialog.draft={ nama:'', bug:null, payloadObj:null, akun:null, port:'443' };
+  activeListMode='';
+  awaitingConfigConfirm=false;
+  setSenkuStateLabel('[DONE] CONFIG SIAP');
+
+  aiReplyWithTyping({
+    text: '✨ Config telah selesai dirangkai!\n◈ Config 「'+cfgData.nama+'」 • Bug: '+safeBug.nama+' ('+safeBug.bug+')\n◈ Payload: '+cfgData.payloadLabel+' • Port '+cfgData.port+' siap digunakan!\nSilahkan download atau salin.',
+    configVoiceKey: 'config_ready',
+    cfgObj: cfgData,
+    cfgIdx: idx,
+    delay: 900
+  });
+}
+
+function showBugListSelectionPrompt(prefixNote){
+  activeListMode = 'BUG';
+  awaitingConfigConfirm = false;
+  if(!bugs.length){
+    aiReplyWithTyping({
+      text: (prefixNote ? prefixNote + '\n' : '') + 'Silahkan pilih dari daftar list berikut ini:\n⚠️ Belum ada bug tersimpan. Silahkan tambahkan bug terlebih dahulu di menu Bug.',
+      delay: 750
+    });
+    return;
+  }
+  setSenkuStateLabel('[PILIH BUG / ANGKA]');
+  var listLines = bugs.map(function(b, i){
+    var payMatch = findPayloadByName(b.nama);
+    return (i+1) + '. ' + b.nama + ' (' + b.bug + ')' + (payMatch ? ' • Payload: ' + payMatch.nama : '');
+  }).join('\n');
+
+  aiReplyWithTyping({
+    text: (prefixNote ? prefixNote + '\n' : '') + 'Silahkan pilih dari daftar list berikut ini:\n' + listLines + '\n\nKlik tombol atau ketik angkanya untuk langsung membuat config.',
+    configVoiceKey: 'choose_ssh',
+    listMode: 'BUG',
+    delay: 850
+  });
+}
+
+function startConfigWizard(presetBug, presetPayload, presetName){
+  activeListMode = '';
+  awaitingConfigConfirm = false;
+  if(!data.length){
+    aiReplyWithTyping({
+      text: '⚠️ Belum ada akun SSH tersimpan. Silahkan tambah dulu di tab ➕ Tambah.',
+      delay: 750
+    });
+    return;
+  }
+  if(!bugs.length){
+    aiReplyWithTyping({
+      text: '⚠️ Belum ada bug tersimpan. Silahkan tambah dulu di tab 🐛 Bug.',
+      delay: 750
+    });
+    return;
+  }
+
+  senkuDialog.draft={
+    nama: presetName || '',
+    bug: presetBug || null,
+    payloadObj: presetPayload || null,
+    akun: null,
+    port: '443'
+  };
+
+  if(presetName && presetBug){
+    senkuDialog.step='ASK_SSH';
+    activeListMode='SSH';
+    setSenkuStateLabel('[2/3] PILIH SSH...');
+    var payInfoTxt = presetPayload ? (' • Payload: "'+presetPayload.nama+'"') : '';
+    aiReplyWithTyping({
+      text: '✧ Merangkai Config 「' + String(presetName).toUpperCase() + '」\n◈ Bug: ' + presetBug.nama + ' (' + presetBug.bug + ')' + payInfoTxt + '\n✦ Silahkan pilih server SSH dari daftar berikut ini:',
+      configVoiceKey: 'choose_ssh',
+      listMode: 'SSH',
+      delay: 950
+    });
+  } else {
+    showBugListSelectionPrompt('');
+  }
+}
+
+var senkuChatHistory = [];
+var aiApiHistory = (function(){
+  try{
+    var saved = JSON.parse(localStorage.getItem('moza_ai_chat_mem') || '[]');
+    return Array.isArray(saved) ? saved.slice(-30) : [];
+  }catch(e){ return []; }
+})();
+var aiUserProfile = (function(){
+  try{
+    return JSON.parse(localStorage.getItem('moza_ai_user_profile') || '{}') || {};
+  }catch(e){ return {}; }
+})();
+
+function saveAiApiHistory(){
+  try{
+    localStorage.setItem('moza_ai_chat_mem', JSON.stringify(aiApiHistory.slice(-30)));
+  }catch(e){}
+}
+
+function saveAiUserProfile(){
+  try{
+    localStorage.setItem('moza_ai_user_profile', JSON.stringify(aiUserProfile));
+  }catch(e){}
+}
+
+function learnFromUserMessage(rawText){
+  var s = String(rawText || '').trim();
+  var mName = s.match(/(?:nama\s*(?:ku|saya|gw|gue)|panggil\s*(?:aku|saya|gw|gue)|kenalin\s*(?:aku|saya|gw|gue))\s+(?:adalah\s+|itu\s+)?([A-Za-z0-9_.-]{2,24})/i);
+  if(mName && mName[1]){
+    var cand = mName[1].replace(/[.,!?]+$/,'');
+    if(!/^(apa|siapa|yang|ini|itu|lagi|mau|bisa)$/i.test(cand)){
+      aiUserProfile.userName = cand;
+      saveAiUserProfile();
+    }
+  }
+  var mLike = s.match(/(?:aku|saya|gw|gue)\s+(?:suka|hobi|senang|lagi\s+belajar|lagi\s+bikin)\s+([^.!?\n]{3,60})/i);
+  if(mLike && mLike[1]){
+    aiUserProfile.lastInterest = mLike[1].trim();
+    saveAiUserProfile();
+  }
+  var mDom = s.match(/(?:tinggal\s+di|asal\s+dari|kota\s+ku|dari\s+kota)\s+([A-Za-z\s]{3,30})/i);
+  if(mDom && mDom[1]){
+    aiUserProfile.location = mDom[1].trim();
+    saveAiUserProfile();
+  }
+}
+
+function getActiveAnimeThemeObj(){
+  var curId = document.body.getAttribute('data-theme') || 'anime_1';
+  return ANIME_THEMES[findAnimeThemeIndex(curId)] || ANIME_THEMES[0];
+}
+
+function tryMatchAndApplyThemeFromText(rawText){
+  var raw = String(rawText || '').trim();
+  var low = typoNormalizeText(raw);
+  var mTheme = low.match(/(?:ganti|ubah|pakai|set|pilih|tukar|pindah)\s*(?:tema|theme|hud|tampilan|warna)\s*(?:ke|jadi|nya)?\s*([a-z0-9\s:;!-]+)$/i);
+  if(!mTheme){
+    mTheme = low.match(/^(?:tema|theme|hud)\s+([a-z0-9\s:;!-]+)$/i);
+  }
+  if(mTheme && mTheme[1]){
+    var qTh = mTheme[1].replace(/[?!.,;:]+$/g, '').trim();
+    if(!qTh) return null;
+    var bestTh = null;
+    var bestThScore = 0;
+    for(var i=0;i<ANIME_THEMES.length;i++){
+      var cand = ANIME_THEMES[i];
+      var sc = wordMatchScore(qTh, cand.name);
+      var cLow = cand.name.toLowerCase();
+      var qLow = qTh.toLowerCase();
+      if(cLow === qLow || cand.id === qLow.replace(/\s+/g,'')) sc = 1.0;
+      else if(cLow.indexOf(qLow) > -1 || qLow.indexOf(cLow) > -1) sc = Math.max(sc, 0.93);
+      if(sc > bestThScore){ bestThScore = sc; bestTh = cand; }
+    }
+    if(bestTh && bestThScore >= 0.58){
+      setTheme(bestTh.id);
+      return bestTh;
+    }
+  }
+  return null;
+}
+
+function trySolveMathExpression(rawText){
+  var s = String(rawText || '').trim();
+  var low = s.toLowerCase().replace(/\?/g, '').trim();
+
+  var mPct = low.match(/(\d+(?:[.,]\d+)?)\s*%\s*(?:dari|x|\*|of)\s*(\d+(?:[.,]\d+)?)/i);
+  if(mPct){
+    var pVal = parseFloat(mPct[1].replace(',', '.'));
+    var baseVal = parseFloat(mPct[2].replace(',', '.'));
+    if(isFinite(pVal) && isFinite(baseVal)){
+      var outPct = (pVal / 100) * baseVal;
+      var fmtPct = Number.isInteger(outPct) ? outPct.toLocaleString('id-ID') : Number(outPct.toFixed(6)).toLocaleString('id-ID');
+      return '🧮 Nah ketemu! ' + pVal + '% dari ' + baseVal.toLocaleString('id-ID') + ' itu hasilnya ' + fmtPct + ' ✨ (gampang banget kan hehe 😆)';
+    }
+  }
+
+  var mSqrt = low.match(/(?:akar(?:\s+kuadrat)?(?:\s+dari)?|sqrt)\s*\(?\s*(\d+(?:[.,]\d+)?)\s*\)?/i);
+  if(mSqrt){
+    var nSq = parseFloat(mSqrt[1].replace(',', '.'));
+    if(isFinite(nSq) && nSq >= 0){
+      var rSq = Math.sqrt(nSq);
+      var fmtSq = Number.isInteger(rSq) ? rSq.toLocaleString('id-ID') : Number(rSq.toFixed(6)).toLocaleString('id-ID');
+      return '🧮 Akar kuadrat dari ' + nSq.toLocaleString('id-ID') + ' adalah ' + fmtSq + ' ✨';
+    }
+  }
+
+  var clean = low
+    .replace(/^(berapa|hitung|hasil|hasil dari|tolong hitung|coba hitung|kalkulasi)\s*/i, '')
+    .replace(/(\d)\s*x\s*(\d)/gi, '$1*$2')
+    .replace(/×/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/:/g, '/')
+    .replace(/,/g, '.')
+    .trim();
+
+  if(/^[0-9+\-*/().\s%^]+$/.test(clean) && /[+\-*/%^]/.test(clean) && /\d/.test(clean)){
+    try{
+      var expr = clean.replace(/\^/g, '**');
+      var res = Function('"use strict";return (' + expr + ')')();
+      if(typeof res === 'number' && isFinite(res)){
+        var formatted = Number.isInteger(res) ? res.toLocaleString('id-ID') : Number(res.toFixed(6)).toLocaleString('id-ID');
+        return '🧮 Hasil dari ' + s.replace(/\?$/,'') + ' = ' + formatted + ' ✨ (cepet kan kayak kalkulator sultan 😎)';
+      }
+    }catch(e){}
+  }
+  return null;
+}
+
+async function fetchDuckDuckGoInstant(queryText){
+  var q = String(queryText || '').replace(/[?!]+$/g, '').trim();
+  if(!q || q.length < 2 || q.length > 140) return null;
+  try{
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var tm = ctrl ? setTimeout(function(){ ctrl.abort(); }, 6500) : null;
+    var url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(q) + '&format=json&no_html=1&skip_disambig=1';
+    var res = await fetch(url, { signal: ctrl ? ctrl.signal : undefined });
+    if(tm) clearTimeout(tm);
+    if(!res || !res.ok) return null;
+    var j = await res.json();
+    var abs = sanitizeAssistantText(j.AbstractText || j.Answer || j.Definition || '');
+    if(abs && abs.length > 20){
+      return '🔎 ' + (j.Heading ? (j.Heading + ':\n') : '') + abs;
+    }
+  }catch(e){}
+  return null;
+}
+
+async function fetchWikipediaSummary(queryText){
+  var qClean = String(queryText || '')
+    .replace(/^(apa\s+itu|siapa\s+itu|siapa\s+yang|siapa|apa\s+arti|jelaskan\s+tentang|jelaskan|ceritakan\s+tentang|sejarah|pengertian|definisi|info\s+tentang|arti\s+kata|apa\s+makna|tolong\s+jelaskan|kasih\s+tau\s+tentang|apa\s+penyebab|bagaimana\s+cara\s+kerja)\s+/i, '')
+    .replace(/[?!.,]+$/g, '')
+    .trim();
+  if(!qClean || qClean.length < 2 || qClean.split(/\s+/).length > 10) return null;
+
+  var langs = ['id', 'en'];
+  for(var li=0; li<langs.length; li++){
+    var lang = langs[li];
+    try{
+      var searchUrl = 'https://' + lang + '.wikipedia.org/w/api.php?action=opensearch&search=' + encodeURIComponent(qClean) + '&limit=3&namespace=0&format=json&origin=*';
+      var sr = await fetch(searchUrl);
+      if(!sr || !sr.ok) continue;
+      var sJson = await sr.json();
+      var title = (sJson && Array.isArray(sJson[1]) && sJson[1][0]) ? sJson[1][0] : '';
+      if(!title) continue;
+
+      var sumUrl = 'https://' + lang + '.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title.replace(/ /g, '_'));
+      var res = await fetch(sumUrl);
+      if(!res || !res.ok) continue;
+      var dataSum = await res.json();
+      if(dataSum && dataSum.extract && dataSum.type !== 'disambiguation'){
+        var extract = sanitizeAssistantText(dataSum.extract);
+        if(extract.length > 30){
+          return '📚 ' + dataSum.title + ':\n' + extract + '\n\nAda lagi yang mau kamu gali atau tanyain dari topik ini? 🤔✨';
+        }
+      }
+    }catch(e){}
+  }
+  return null;
+}
+
+function cleanAiResponseNoise(txt){
+  var s = sanitizeAssistantText(txt || '');
+  s = s.replace(/\n?---\n?\*\*Sponsor\*\*[\s\S]*$/i, '').trim();
+  s = s.replace(/\n?Support Pollinations\.AI[\s\S]*$/i, '').trim();
+  return s;
+}
+
+function isValidAiText(ans){
+  if(!ans || ans.length < 2) return false;
+  if(ans.indexOf('<!DOCTYPE') > -1 || ans.indexOf('<html') > -1) return false;
+  if(/rate limit|too many requests|bad gateway|service unavailable|error 502|error 503|cloudflare|queue full/i.test(ans)) return false;
+  return true;
+}
+
+var DEEPSEEK_API_KEY = '';
+var DEEPSEEK_ENDPOINTS = [];
+var DEEPSEEK_MODELS = ['deepseek/deepseek-chat', 'deepseek-chat', 'deepseek-reasoner'];
+var lastAiEngineUsed = 'IDLE';
+
+function isConversationalOrFollowUp(text){
+  var t = String(text || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+  if(!t) return true;
+  var words = t.split(/\s+/);
+  if(words.length <= 2 && /^(beneran|serius|masa|masasih|betul|betulkah|iya|ya|yoi|oke|ok|sip|siap|mantap|keren|wah|oh|hmm|hm|wkwk|haha|hehe|lol|kenapa|mengapa|bagaimana|gimana|terus|lanjut|emang|emangnya)$/.test(t)){
+    return true;
+  }
+  return false;
+}
+
+var NETLIFY_DEEPSEEK_PROXY_URL = '/.netlify/functions/deepseek-chat';
+
+async function fetchDeepSeekChat(messages){
+  try{
+    var ctrlProxy = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var tmProxy = ctrlProxy ? setTimeout(function(){ ctrlProxy.abort(); }, 15000) : null;
+    var resProxy = await fetch(NETLIFY_DEEPSEEK_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: messages,
+        model: 'deepseek/deepseek-chat',
+        temperature: 0.75,
+        max_tokens: 1000
+      }),
+      signal: ctrlProxy ? ctrlProxy.signal : undefined
+    });
+    if(tmProxy) clearTimeout(tmProxy);
+    if(resProxy && resProxy.ok){
+      var pJson = await resProxy.json();
+      var pContent = pJson && pJson.reply ? pJson.reply : '';
+      var pCleaned = cleanAiResponseNoise(pContent);
+      if(isValidAiText(pCleaned)){
+        var usedMdl = (pJson && pJson.model) ? pJson.model : 'deepseek-chat';
+        lastAiEngineUsed = 'NETLIFY DEEPSEEK (' + usedMdl + ')';
+        setSenkuStateLabel('DEEPSEEK AKTIF • ' + usedMdl);
+        return pCleaned;
+      }
+    }
+  }catch(eProxy){}
+
+  for(var ep = 0; DEEPSEEK_API_KEY && ep < DEEPSEEK_ENDPOINTS.length; ep++){
+    var url = DEEPSEEK_ENDPOINTS[ep];
+    for(var i = 0; i < DEEPSEEK_MODELS.length; i++){
+      var mdl = DEEPSEEK_MODELS[i];
+      try{
+        var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var tm = ctrl ? setTimeout(function(){ ctrl.abort(); }, 7000) : null;
+        var res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + DEEPSEEK_API_KEY
+          },
+          body: JSON.stringify({
+            model: mdl,
+            messages: messages,
+            temperature: 0.75,
+            max_tokens: 1000
+          }),
+          signal: ctrl ? ctrl.signal : undefined
+        });
+        if(tm) clearTimeout(tm);
+        if(!res || !res.ok) continue;
+        var dataJson = await res.json();
+        var content = '';
+        if(dataJson && Array.isArray(dataJson.choices) && dataJson.choices[0]){
+          content = dataJson.choices[0].message?.content || dataJson.choices[0].text || '';
+        }
+        var cleaned = cleanAiResponseNoise(content);
+        if(isValidAiText(cleaned)){
+          lastAiEngineUsed = 'DEEPSEEK (' + mdl + ')';
+          setSenkuStateLabel('DEEPSEEK AKTIF • ' + mdl);
+          return cleaned;
+        }
+      }catch(e){}
+    }
+  }
+  return null;
+}
+
+async function fetchUniversalKnowledgeAI(userPrompt, systemContext){
+  var messages = [{ role: 'system', content: systemContext }];
+  for(var i = Math.max(0, aiApiHistory.length - 28); i < aiApiHistory.length; i++){
+    messages.push(aiApiHistory[i]);
+  }
+  messages.push({ role: 'user', content: userPrompt });
+
+  function recordAndReturn(textVal, engineLabel){
+    var cleaned = cleanAiResponseNoise(textVal);
+    if(!isValidAiText(cleaned)) return null;
+    lastAiEngineUsed = engineLabel || 'AI';
+    aiApiHistory.push({ role: 'user', content: userPrompt });
+    aiApiHistory.push({ role: 'assistant', content: cleaned });
+    if(aiApiHistory.length > 40) aiApiHistory = aiApiHistory.slice(-40);
+    saveAiApiHistory();
+    return cleaned;
+  }
+
+  var dsReply = await fetchDeepSeekChat(messages);
+  if(dsReply){
+    var rDs = recordAndReturn(dsReply, lastAiEngineUsed);
+    if(rDs) return rDs;
+  }
+
+  setSenkuStateLabel('FALLBACK MODE • CEK API/KONEKSI');
+
+  if(!isConversationalOrFollowUp(userPrompt)){
+    var modelsToTry = ['openai', 'deepseek', 'qwen-coder', 'mistral'];
+    for(var mi = 0; mi < modelsToTry.length; mi++){
+      var mdl = modelsToTry[mi];
+      try{
+        var ctrl1 = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var t1 = ctrl1 ? setTimeout(function(){ ctrl1.abort(); }, 7000) : null;
+        var res = await fetch('https://text.pollinations.ai/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: messages,
+            model: mdl,
+            seed: Math.floor(Math.random() * 999999),
+            private: true
+          }),
+          signal: ctrl1 ? ctrl1.signal : undefined
+        });
+        if(t1) clearTimeout(t1);
+        if(res && res.ok){
+          var r1 = recordAndReturn(await res.text(), 'POLLINATIONS (' + mdl + ')');
+          if(r1) return r1;
+        }
+      }catch(e){}
+    }
+
+    var wikiAns = await fetchWikipediaSummary(userPrompt);
+    if(wikiAns){
+      var r3 = recordAndReturn(wikiAns, 'WIKIPEDIA');
+      if(r3) return r3;
+    }
+
+    var ddgAns = await fetchDuckDuckGoInstant(userPrompt);
+    if(ddgAns){
+      var r4 = recordAndReturn(ddgAns, 'DUCKDUCKGO');
+      if(r4) return r4;
+    }
+  }
+
+  return null;
+}
+
+function buildSmartOfflineEncyclopediaReply(rawText){
+  var raw = String(rawText || '').trim();
+  var low = raw.toLowerCase();
+  var userCall = aiUserProfile.userName ? (' ' + aiUserProfile.userName) : '';
+
+  if(/^(beneran|serius|masa|masasih|betul|betulkah|emang|emangnya)[?!.]*$/i.test(low)){
+    var lastAiTurn = '';
+    for(var hi = aiApiHistory.length - 1; hi >= 0; hi--){
+      if(aiApiHistory[hi].role === 'assistant'){
+        lastAiTurn = aiApiHistory[hi].content || '';
+        break;
+      }
+    }
+    if(lastAiTurn){
+      return 'Beneran dong' + userCall + '! 😄✨ Tadi aku baru bilang: "' + lastAiTurn.slice(0, 140) + (lastAiTurn.length > 140 ? '...' : '') + '"\n\nMau dibuktikan atau dibahas lebih lanjut bagian mananya nih? 😎';
+    }
+    return 'Beneran dong' + userCall + '! 😄✨ Aku siap bantu ngobrol, jawab pertanyaan, atau bikin config .dark kapan aja. Mau mulai dari mana? 🚀';
+  }
+  var mathAns = trySolveMathExpression(raw);
+  if(mathAns) return mathAns;
+
+  if(/^(halo+|hallo+|helo+|hai+|hi+|yo+|oi+|pagi|siang|sore|malam|assalamualaikum|p|uy|woy|bro|bang|kak)\b/i.test(low) && low.split(/\s+/).length <= 5){
+    return 'Haaai' + userCall + '! 👋😄 Ada apa nih? Lagi pengen ngobrol santai, bercanda, curhat, nanya ilmu pengetahuan, coding, strategi game, atau mau langsung ngerakit config sakti? Gas cerita aja, aku nyambung 100% kok! ✨🚀';
+  }
+  if(/\b(siapa kamu|kamu siapa|nama kamu|lu siapa|loe siapa|kenalan|kamu bisa apa|fitur kamu)\b/i.test(low)){
+    return 'Kenalin' + userCall + ', aku AI Assistant cerdas tingkat atas di sini! 🤖✨\nSelain jago ngerakit config .dark, SSH, Bug, & Payload secepat kilat ⚡, aku juga bisa diajak diskusi & jawab apa saja: sains & astronomi 🌌, sejarah dunia 📜, matematika & logika 🧮, pemrograman & debugging 💻, bisnis & produktivitas 📈, curhat & psikologi 🫂, humor receh 😂, sampai anime & game 🎮! Cobain tanya bebas sekarang! 😎🔥';
+  }
+  if(/\b(terima kasih|makasih|thanks|thx|tq|mantap|keren|hebat|pintar|pinter|gokil|asik|lucu)\b/i.test(low) && low.split(/\s+/).length <= 7){
+    return 'Hehe sama-sama' + userCall + '! 😄✨ Senang banget bisa bantu & bikin obrolan kita seru! Kalau ada pertanyaan berat, ide kreatif, tebak-tebakan, atau mau bikin config lagi, langsung gas ketik aja ya! 🚀🙌';
+  }
+  if(/\b(becanda|bercanda|lawak|jokes|joke|humor|receh|tebak|hibur|ngakak)\b/i.test(low)){
+    var jokesList = [
+      '😂 Nih dengerin: Kenapa sinyal Wi-Fi sama kayak perasaan doi? Sama-sama kelihatan penuh bar-nya, tapi pas diklik malah "No Internet Access" 😭📶',
+      '🤣 Tebak-tebakan nih: Ikan apa yang paling sering begadang nungguin server reset? Ikan-kan ku tunggu sampai jam 00:00 WIB demi akun SSH VIP! 🐟⚡',
+      '😆 Kenapa programmer kalau tidur lampu kamarnya dimatiin? Soalnya dia alergi sama "Light Mode", takut silau kayak masa depan! 💻🕶️'
+    ];
+    return jokesList[Math.floor(Math.random() * jokesList.length)] + '\n\nMau lagi atau mau bahas topik serius nih' + userCall + '? 😜✨';
+  }
+  if(/\b(capek|lelah|stres|galau|sedih|bosan|gabut|bingung|pusing|overthinking|badmood)\b/i.test(low)){
+    return 'Puk-puk dulu sini' + userCall + ' 🫂🌿 Wajar banget kok ngerasa capek atau sumpek kalau kepala lagi penuh. Tarik napas pelan, minum air putih dulu ya 💧. Kalau lagi pengen cerita atau butuh sudut pandang baru, tumpahin aja semuanya di sini—aku siap dengerin & bantu urai pelan-pelan! 😊✨';
+  }
+  if(/\b(sni|server name indication)\b/i.test(low)){
+    return '🔐 SNI (Server Name Indication) adalah ekstensi pada protokol TLS/SSL yang memberi tahu server domain mana yang dituju saat proses handshake awal sebelum enkripsi penuh aktif. Pada tunneling port 443, SNI dipakai menyesuaikan header domain bug yang diizinkan paket operator agar koneksi terowongan berjalan lancar! 🚀';
+  }
+  if(/\b(websocket|ws|upgrade)\b/i.test(low)){
+    return '🌐 WebSocket (WS) adalah protokol komunikasi dua arah (full-duplex) persisten di atas koneksi TCP tunggal (port 80/443). Dengan header Upgrade: websocket, trafik SSH/V2Ray kamu dikemas menyerupai lalu lintas web standar melalui CDN! ⚡';
+  }
+  if(/\b(v2ray|vmess|vless|trojan)\b/i.test(low)){
+    return '🚀 Perbandingan Protokol V2Ray:\n• VMess: Enkripsi simetris bawaan + autentikasi berbasis waktu & UUID.\n• VLESS: Arsitektur ringan tanpa enkripsi ganda (mengandalkan TLS), latensi rendah & hemat CPU ⚡\n• Trojan: Meniru pola paket HTTPS murni pada port 443 sehingga sangat sulit dibedakan oleh sistem DPI! 🛡️';
+  }
+  if(/\b(dark tunnel|http custom|http injector)\b/i.test(low)){
+    return '🛡️ Trio Aplikasi Tunneling Andalan:\n• Dark Tunnel (.dark): Ringan, responsif untuk SSH, SSL/SNI, Proxy Payload, & V2Ray.\n• HTTP Custom (.hc): Fleksibel untuk SSH + WebSocket + Custom Payload & UDP.\n• HTTP Injector (.ehi): Fitur lengkap mulai dari SSH, Shadowsocks, DNS Changer, hingga Payload Generator! 🔥';
+  }
+  if(/\b(coding|html|javascript|js|python|php|lua|smali|css|error|bug code)\b/i.test(low)){
+    return '💻 Mode Engineering & Coding Aktif! Tempelkan potongan kode kamu atau jelaskan bahasa & fitur yang sedang dibangun (HTML/JS, Python, PHP, Lua, Smali/Android, C++, SQL). Aku siap bantu menulis dari nol, optimasi algoritma, maupun debugging error-nya! 🛠️⚡';
+  }
+  if(/\b(sains|fisika|kimia|biologi|alam semesta|planet|matahari|bumi|gravitasi|atom|kuantum)\b/i.test(low)){
+    return '🧪 Sains & Alam Semesta: Mulai dari mekanika kuantum partikel subatomik hingga relativitas umum dan lubang hitam supermasif di pusat galaksi, semuanya bekerja dengan hukum fisika yang presisi! 🌌 Sebutkan fenomena atau konsep spesifik yang ingin kamu bedah, langsung kita bahas tuntas! ✨';
+  }
+  if(/\b(sejarah|indonesia|perang dunia|kemerdekaan|kerajaan|majapahit|soekarno)\b/i.test(low)){
+    return '📜 Wawasan Sejarah: Dari kejayaan maritim Nusantara, diplomasi dan perjuangan kemerdekaan 1945, hingga titik balik peradaban dan teknologi modern dunia. Sebut saja tokoh, era, atau peristiwa yang ingin kamu telusuri! 🏛️✨';
+  }
+
+  if(/\b(kenapa|mengapa|bagaimana|gimana|apa itu|arti|fungsi|manfaat|cara|tips|rekomendasi|bandingkan|perbedaan|kelebihan|kekurangan)\b/i.test(low)){
+    var topicClean = raw.replace(/^(apa\s+itu|siapa\s+itu|kenapa|mengapa|bagaimana|gimana|jelaskan|tolong\s+jelaskan|kasih\s+tau)\s+/i, '').replace(/[?!]+$/g, '').trim();
+    return '🧠 Analisis & Penjelasan untuk "' + topicClean + '"' + userCall + ':\n\n' +
+           '1. Inti Konsep: Setiap topik memiliki prinsip dasar, sebab-akibat, dan konteks penggunaan yang berbeda tergantung tujuan akhirnya.\n' +
+           '2. Cara Memahami & Menerapkan: Pecah masalah menjadi bagian kecil yang terukur, pahami fondasi utamanya terlebih dahulu, lalu uji langsung dengan contoh nyata.\n' +
+           '3. Hal Penting yang Perlu Diperhatikan: Sesuaikan pendekatan dengan kondisi spesifik di lapangan, hindari asumsi mentah tanpa verifikasi, dan evaluasi hasilnya secara berkala.\n\n' +
+           'Kalau kamu mau fokus ke sudut pandang tertentu (misalnya teknis mendalam, contoh kasus nyata, langkah praktis, atau perbandingan opsi), beri tahu saja biar aku kupas lebih tajam! ✨';
+  }
+
+  return 'Sip' + userCall + ', aku nyambung sama maksudmu soal "' + raw + '"! 🧠✨\n' +
+         'Biar jawabanku makin pas dan kena banget ke kebutuhanmu, kamu mau diarahkan ke mana nih—penjelasan konsep/ilmu, langkah praktis, ide kreatif, analisis masalah, atau diskusi santai? Ketik aja detailnya, aku siap jawab tuntas! 💡🚀';
+}
+
+function generateConversationalAiReply(rawText){
+  var raw = String(rawText || '').trim();
+  var low = typoNormalizeText(raw);
+  var th = getActiveAnimeThemeObj();
+  var now = new Date();
+  var jamStr = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  var hr = now.getHours();
+  var salamWaktu = hr < 11 ? 'Selamat pagi' : (hr < 15 ? 'Selamat siang' : (hr < 19 ? 'Selamat sore' : 'Selamat malam'));
+
+  var appliedTheme = tryMatchAndApplyThemeFromText(raw);
+  if(appliedTheme){
+    return '✨ Wuss! Tema langsung berubah ke ' + appliedTheme.icon + ' ' + appliedTheme.name + '! Semua HUD, font, kartu SSH, statistik, dan chat AI udah sinkron otomatis nih 😎🔥';
+  }
+
+  if(/\b(acak musik|ganti lagu|putar musik|play musik|musik anime|lagu anime)\b/i.test(low)){
+    randomAnimeMusic();
+    var trNow = ANIME_100_PLAYLIST[currentAnimeTrackIdx] || ANIME_100_PLAYLIST[0];
+    return '🎵 Gas! Aku puterin soundtrack anime pilihan: #' + (currentAnimeTrackIdx+1) + ' ' + trNow.title + ' 🎧✨';
+  }
+  if(/\b(stop musik|matikan musik|pause musik|berhenti musik)\b/i.test(low)){
+    stopMp3();
+    return '⏸️ Oke siap, musik udah aku pause dulu. Kalau mau lanjut dengerin tinggal bilang "putar musik" ya! 😊🎶';
+  }
+
+  if(/\b(jam berapa|pukul berapa|waktu sekarang|tanggal berapa|hari apa)\b/i.test(low)){
+    return '🕒 Sekarang jam ' + jamStr + ' WIB (' + salamWaktu + ')! Semua sistem tunneling & tema ' + th.icon + ' ' + th.name + ' aman terkendali 🚀✨';
+  }
+  if(/\b(tema sekarang|tema apa|hud apa|warna apa)\b/i.test(low)){
+    return '🎨 Tema yang lagi aktif sekarang itu ' + th.icon + ' ' + th.name + '! Keren kan tampilannya? Kalau mau ganti tinggal sebut aja nama animenya 😎✨';
+  }
+
+  return null;
+}
+
+function analyzeSmartIntent(rawText){
+  var raw = String(rawText || '').trim();
+  var low = typoNormalizeText(raw);
+  var cleanLow = low.replace(/[?!.,;:]+$/g, '').trim();
+
+  var resolved = resolveBugAndPayloadByQuery(raw);
+  var matchedBug = resolved.bug;
+  var matchedPay = resolved.payloadObj;
+  var matchedSsh = findSshByInput(raw);
+
+  if(/\b(status vault|ringkasan vault|rekap data|cek semua data|info vault|statistik ssh)\b/i.test(cleanLow)){
+    var expCount = data.filter(function(x){ return x.exp && parseTanggal(x.exp); }).length;
+    var vipCount = data.filter(function(x){ return x.kat === 'VIP'; }).length;
+    var sgCount = data.filter(function(x){ return x.kat === 'SG'; }).length;
+    var idCount = data.filter(function(x){ return x.kat === 'ID'; }).length;
+    var soonExp = data.filter(function(x){ var sd=sisaDetail(x); return sd && !sd.expired && sd.hari !== undefined && sd.hari <= 2; }).length;
+    return {
+      text: '📊 Laporan Lengkap Vault Kamu:\n' +
+            '• SSH Aktif: ' + data.length + ' akun (🇸🇬 SG: ' + sgCount + ' • 🇮🇩 ID: ' + idCount + ' • ⭐ VIP: ' + vipCount + ')\n' +
+            '• Timer Exp: ' + expCount + ' akun' + (soonExp > 0 ? ' (⚠️ ' + soonExp + ' mau habis ≤2 hari!)' : ' (aman jaya ✅)') + '\n' +
+            '• Bug Tersimpan: ' + bugs.length + ' • Payload Tersimpan: ' + payloads.length + '\n' +
+            '• Aplikasi Tersimpan: ' + apps.length
+    };
+  }
+
+  if((matchedBug || matchedPay || matchedSsh) && /\b(cek|lihat|info|detail)\b/i.test(cleanLow)){
+    var infoParts = [];
+    if(matchedBug) infoParts.push('• 🐛 Bug cocok: "' + matchedBug.nama + '" → ' + matchedBug.bug + ' (' + matchedBug.op + ')');
+    if(matchedPay) infoParts.push('• 📦 Payload cocok: "' + matchedPay.nama + '" (' + matchedPay.op + ')');
+    if(matchedSsh) infoParts.push('• 🔑 SSH cocok: #' + (data.indexOf(matchedSsh)+1) + ' ' + (matchedSsh.nama || matchedSsh.host));
+    return {
+      text: '🔍 Data yang tersimpan:\n' + infoParts.join('\n')
+    };
+  }
+
+  return null;
+}
+
+function resetSenkuChat(){
+  senkuDialog.step='IDLE';
+  senkuDialog.draft={ nama:'', bug:null, payloadObj:null, akun:null, port:'443' };
+  activeListMode='';
+  awaitingConfigConfirm=false;
+  senkuChatHistory=[];
+  setSenkuStateLabel('SIAP NGOBROL & CONFIG');
+  var log=document.getElementById('senkuChatLog');
+  if(log) log.innerHTML='';
+  appendSenkuMsg('ai', 'Halo! Obrolan direset. Mau ngobrol apa saja atau bikin config? Ketik saja!', null, -1, {});
+}
+
+async function handleSenkuCommand(userText){
+  var txt=String(userText||'').trim();
+  if(!txt) return;
+
+  appendSenkuMsg('user', txt, null, -1, {});
+  senkuChatHistory.push({ role: 'user', text: txt });
+  if(senkuChatHistory.length > 16) senkuChatHistory.shift();
+  learnFromUserMessage(txt);
+
+  var normTxt = typoNormalizeText(txt);
+  var resAuto = resolveBugAndPayloadByQuery(txt);
+  var inlinePortMatch = txt.match(/\b(443|80)\b/);
+  var inlinePort = inlinePortMatch ? inlinePortMatch[1] : null;
+  var isInActiveConfigFlow =
+    senkuDialog.step === 'ASK_SSH' ||
+    senkuDialog.step === 'ASK_PORT' ||
+    activeListMode !== '' ||
+    awaitingConfigConfirm;
+
+  var wantsConfigCreation =
+    /\b(bikin|buat|buatin|bikinin|generate|rakit)\s+(?:[a-z0-9._-]+\s+)*(?:config|cfg|konfig|konfigurasi|\.dark|dark\s*tunnel|darktunnel)\b/i.test(normTxt) ||
+    /^(?:bikin|buat|generate|rakit|gas|mulai)\s*(?:config|cfg|konfig|konfigurasi)?$/i.test(normTxt) ||
+    /^config(?:\s+[a-z0-9._-]+)?$/i.test(normTxt);
+
+  var isExplicitConfigRequest = wantsConfigCreation || isInActiveConfigFlow;
+
+  if(isExplicitConfigRequest && /^(batal|cancel|stop|selesai|udahlah|ga jadi|gak jadi)$/i.test(normTxt)){
+    senkuDialog.step='IDLE';
+    senkuDialog.draft={ nama:'', bug:null, payloadObj:null, akun:null, port:'443' };
+    activeListMode='';
+    awaitingConfigConfirm=false;
+    setSenkuStateLabel('SIAP NGOBROL & CONFIG');
+    aiReplyWithTyping({ text: '👌 Oke, proses config dibatalkan. Silahkan ketik perintah lain atau ngobrol bebas.', delay: 750 });
+    return;
+  }
+
+  if(senkuDialog.step === 'ASK_SSH'){
+    var chosenSsh = findSshByInput(txt);
+    if(!chosenSsh){
+      aiReplyWithTyping({
+        text: '⚠️ Server SSH belum cocok. Silahkan pilih dari daftar SSH berikut ini:',
+        listMode: 'SSH',
+        delay: 750
+      });
+      return;
+    }
+    senkuDialog.draft.akun = chosenSsh;
+    activeListMode = '';
+    if(inlinePort){
+      finalizeSenkuConfig(
+        senkuDialog.draft.nama || (senkuDialog.draft.bug ? senkuDialog.draft.bug.nama : 'config'),
+        chosenSsh,
+        senkuDialog.draft.bug,
+        inlinePort,
+        senkuDialog.draft.payloadObj
+      );
+      return;
+    }
+    senkuDialog.step = 'ASK_PORT';
+    setSenkuStateLabel('[3/3] PILIH PORT...');
+    aiReplyWithTyping({
+      text: '✦ SSH dipilih: ' + (chosenSsh.nama || chosenSsh.host) + ' (' + chosenSsh.user + ')\n✦ Silahkan pilih port koneksi (443 atau 80):',
+      configVoiceKey: 'choose_port',
+      portPicker: true,
+      delay: 850
+    });
+    return;
+  }
+
+  if(senkuDialog.step === 'ASK_PORT'){
+    var pChosen = null;
+    if(inlinePort) pChosen = inlinePort;
+    else if(/\b(443|ssl|tls)\b/i.test(normTxt)) pChosen = '443';
+    else if(/\b(80|http|ws|websocket)\b/i.test(normTxt)) pChosen = '80';
+
+    if(!pChosen){
+      aiReplyWithTyping({
+        text: '⚠️ Silahkan pilih port 443 atau 80.',
+        portPicker: true,
+        delay: 750
+      });
+      return;
+    }
+    finalizeSenkuConfig(
+      senkuDialog.draft.nama || (senkuDialog.draft.bug ? senkuDialog.draft.bug.nama : 'config'),
+      senkuDialog.draft.akun,
+      senkuDialog.draft.bug,
+      pChosen,
+      senkuDialog.draft.payloadObj
+    );
+    return;
+  }
+
+  if(activeListMode === 'BUG'){
+    var chosenBugFromList = null;
+    if(/^\d+$/.test(normTxt)){
+      var bIdx = parseInt(normTxt, 10) - 1;
+      if(bIdx >= 0 && bIdx < bugs.length) chosenBugFromList = bugs[bIdx];
+    } else {
+      chosenBugFromList = findBugStrict(txt);
+    }
+    if(chosenBugFromList){
+      var autoPayFromBug = findPayloadByName(chosenBugFromList.nama);
+      startConfigWizard(chosenBugFromList, autoPayFromBug, chosenBugFromList.nama);
+      return;
+    }
+  }
+
+  if(activeListMode === 'PAYLOAD'){
+    var chosenPayFromList = null;
+    if(/^\d+$/.test(normTxt)){
+      var pIdx = parseInt(normTxt, 10) - 1;
+      if(pIdx >= 0 && pIdx < payloads.length) chosenPayFromList = payloads[pIdx];
+    } else {
+      chosenPayFromList = findPayloadByName(txt);
+    }
+    if(chosenPayFromList){
+      var autoBugFromPay = findBugStrict(chosenPayFromList.nama) || (bugs.length ? bugs[0] : null);
+      startConfigWizard(autoBugFromPay, chosenPayFromList, chosenPayFromList.nama);
+      return;
+    }
+  }
+
+  if(activeListMode === 'SSH'){
+    var chosenSshFromList = findSshByInput(txt);
+    if(chosenSshFromList){
+      senkuDialog.draft.akun = chosenSshFromList;
+      activeListMode = '';
+      if(inlinePort){
+        finalizeSenkuConfig(
+          senkuDialog.draft.nama || (senkuDialog.draft.bug ? senkuDialog.draft.bug.nama : 'config'),
+          chosenSshFromList,
+          senkuDialog.draft.bug,
+          inlinePort,
+          senkuDialog.draft.payloadObj
+        );
+      } else {
+        senkuDialog.step = 'ASK_PORT';
+        setSenkuStateLabel('[3/3] PILIH PORT...');
+        aiReplyWithTyping({
+          text: '✦ SSH dipilih: ' + (chosenSshFromList.nama || chosenSshFromList.host) + ' (' + chosenSshFromList.user + ')\n✦ Silahkan pilih port koneksi (443 atau 80):',
+          configVoiceKey: 'choose_port',
+          portPicker: true,
+          delay: 850
+        });
+      }
+      return;
+    }
+  }
+
+  if(/\b(daftar\s*payload|cek\s*payload|list\s*payload|payload)\b/i.test(normTxt) && !wantsConfigCreation){
+    if(!payloads.length){
+      activeListMode = '';
+      aiReplyWithTyping({ text: '⚠️ Belum ada payload tersimpan di tab Payload.', delay: 750 });
+    } else {
+      activeListMode = 'PAYLOAD';
+      var pListStr = payloads.map(function(p, i){ return (i+1)+'. '+p.nama+' ('+p.op+')'; }).join('\n');
+      aiReplyWithTyping({
+        text: '📦 Daftar Payload ('+payloads.length+'):\n'+pListStr+'\n\nKlik tombol atau ketik angkanya untuk langsung membuat config.',
+        listMode: 'PAYLOAD',
+        delay: 850
+      });
+    }
+    return;
+  }
+
+  if(/\b(daftar\s*bug|cek\s*bug|list\s*bug|bug)\b/i.test(normTxt) && !wantsConfigCreation){
+    if(!bugs.length){
+      activeListMode = '';
+      aiReplyWithTyping({ text: '⚠️ Belum ada bug tersimpan di tab Bug.', delay: 750 });
+    } else {
+      activeListMode = 'BUG';
+      var bListStr = bugs.map(function(b, i){ return (i+1)+'. '+b.nama+' - '+b.bug+' ('+b.op+')'; }).join('\n');
+      aiReplyWithTyping({
+        text: '🐛 Daftar Bug ('+bugs.length+'):\n'+bListStr+'\n\nKlik tombol atau ketik angkanya untuk langsung membuat config.',
+        listMode: 'BUG',
+        delay: 850
+      });
+    }
+    return;
+  }
+
+  if(/\b(daftar\s*ssh|cek\s*ssh|list\s*ssh|ssh)\b/i.test(normTxt) && !wantsConfigCreation){
+    if(!data.length){
+      activeListMode = '';
+      aiReplyWithTyping({ text: '⚠️ Belum ada akun SSH tersimpan.', delay: 750 });
+    } else {
+      activeListMode = 'SSH';
+      var sListStr = data.map(function(a, i){ return (i+1)+'. '+a.nama+' ('+a.user+')'; }).join('\n');
+      aiReplyWithTyping({
+        text: '🔑 Daftar SSH ('+data.length+'):\n'+sListStr+'\n\nKlik tombol atau ketik angkanya untuk langsung membuat config.',
+        listMode: 'SSH',
+        delay: 850
+      });
+    }
+    return;
+  }
+
+  if(wantsConfigCreation){
+    var subjName = (resAuto.subject && !/^(bikin|buat|generate|rakit|gas|mulai|config|cfg|konfig|konfigurasi)$/i.test(resAuto.subject))
+      ? resAuto.subject
+      : '';
+
+    if(resAuto.bug || resAuto.payloadObj){
+      var pickedBug = resAuto.bug || (bugs.length ? bugs[0] : null);
+      var pickedPay = resAuto.payloadObj || (pickedBug ? findPayloadByName(pickedBug.nama) : null);
+      var finalCfgName = subjName || (pickedBug ? pickedBug.nama : (pickedPay ? pickedPay.nama : 'config'));
+      startConfigWizard(pickedBug, pickedPay, finalCfgName);
+      return;
+    }
+
+    if(subjName){
+      senkuDialog.draft = {
+        nama: subjName,
+        bug: null,
+        payloadObj: null,
+        akun: null,
+        port: inlinePort || '443'
+      };
+      showBugListSelectionPrompt('⚠️ Nama "' + subjName + '" belum cocok dengan bug di daftar.');
+      return;
+    }
+
+    startConfigWizard(null, null, '');
+    return;
+  }
+
+  var smartVaultIntent = analyzeSmartIntent(txt);
+  if(smartVaultIntent){
+    aiReplyWithTyping({
+      text: smartVaultIntent.text,
+      doneVoiceKey: 'chat_reply',
+      delay: 750
+    });
+    return;
+  }
+
+  var quickLocalReply = generateConversationalAiReply(txt);
+  if(quickLocalReply){
+    aiReplyWithTyping({
+      text: quickLocalReply,
+      doneVoiceKey: 'chat_reply',
+      delay: 650
+    });
+    return;
+  }
+
+  setAiTyping(true);
+  var thActive = getActiveAnimeThemeObj();
+  var sysCtx =
+    'Kamu adalah AI Assistant cerdas, serba bisa, ramah, ekspresif, dan sangat nyambung di aplikasi Forum Tunneling By Rio. ' +
+    'Kamu bisa membantu segala topik secara mendalam dan akurat: ilmu pengetahuan & sains, matematika & logika, teknologi & pemrograman (HTML/JS/Python/PHP/Lua/Android/jaringan/tunneling), sejarah & geografi, bahasa & penulisan, ide kreatif, curhat & obrolan santai, humor/candaan, anime, game, dan kehidupan sehari-hari. ' +
+    'Jawablah dengan jelas, terstruktur, dan gunakan bahasa Indonesia yang natural serta enak dibaca (boleh pakai emoji secukupnya). ' +
+    (aiUserProfile.userName ? ('Nama pengguna: ' + aiUserProfile.userName + '. ') : '') +
+    (aiUserProfile.lastInterest ? ('Minat pengguna: ' + aiUserProfile.lastInterest + '. ') : '') +
+    (aiUserProfile.location ? ('Lokasi pengguna: ' + aiUserProfile.location + '. ') : '') +
+    'Tema visual saat ini: ' + thActive.name + '. Ringkasan data lokal: ' + data.length + ' SSH, ' + bugs.length + ' Bug, ' + payloads.length + ' Payload.';
+
+  var aiAnswer = await fetchUniversalKnowledgeAI(txt, sysCtx);
+  setAiTyping(false);
+
+  if(!aiAnswer){
+    aiAnswer = buildSmartOfflineEncyclopediaReply(txt);
+  }
+
+  appendSenkuMsg('ai', aiAnswer, null, -1, {});
+  senkuChatHistory.push({ role: 'ai', text: aiAnswer });
+  if(senkuChatHistory.length > 16) senkuChatHistory.shift();
+  playAiChatNotifChime();
+}
+
+function sendSenkuPrompt(e){
+  if(e) e.preventDefault();
+  var inp=document.getElementById('senkuPromptInput');
+  if(!inp) return;
+  var v=inp.value.trim();
+  if(!v) return;
+  inp.value='';
+  handleSenkuCommand(v);
+}
+function quickSenkuCmd(cmd){
+  handleSenkuCommand(cmd);
+}
+
+(function initSenkuWelcome(){
+  var log=document.getElementById('senkuChatLog');
+  if(log && !log.children.length){
+    var greetingIntro = aiUserProfile.userName
+      ? ('Halo ' + aiUserProfile.userName + '! Senang banget ketemu lagi 😄✨')
+      : 'Halo! Senang banget bisa ngobrol bareng kamu 😄✨';
+    appendSenkuMsg(
+      'ai',
+      greetingIntro + '\nAku siap bantu apa aja—mulai dari bikin config .dark, cek SSH/Bug/Payload, ganti tema, sampai diskusi ilmu, coding, matematika, curhat, atau ngobrol santai!\n\nMau mulai dari mana nih? 🚀',
+      null,
+      -1,
+      {}
+    );
+  }
+})();
+
+loadSavedBg();
+initSavedMusic();
+refreshConfigSelects();
+render(true);
+renderPayload();
+renderBug();
+renderAplikasi();
+setInterval(function(){ render(false); }, 1000);
+</script>
+</body>
+</html>
