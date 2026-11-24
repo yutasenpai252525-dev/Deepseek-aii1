@@ -34,7 +34,15 @@ exports.handler = async function (event) {
       };
     }
 
-    const apiKey = process.env.DEEPSEEK_API_KEY || '95d00bde1a0dc5c9a79b9001066c7a90';
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) {
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'DEEPSEEK_API_KEY is not configured in environment variables' })
+      };
+    }
+
     const endpoints = [
       {
         url: process.env.DEEPSEEK_BASE_URL || 'https://api.aimlapi.com/v1/chat/completions',
